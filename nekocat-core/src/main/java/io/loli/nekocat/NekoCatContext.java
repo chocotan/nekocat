@@ -51,11 +51,21 @@ public class NekoCatContext {
      * @param url the url that will be downloaded
      */
     public NekoCatContext next(String url) {
+        return next(new NekoCatRequest(url));
+    }
+
+
+    /**
+     * Add request that will be downloaded
+     *
+     * @param nextRequest the request that will be downloaded
+     */
+    public NekoCatContext next(NekoCatRequest nextRequest) {
         NekoCatContext context = new NekoCatContext(source);
+        context.addNextAttribute("lastUrl", request.getUrl());
         context.setAttributes(this.getNextAttributes());
-        NekoCatRequest request = new NekoCatRequest(url);
-        request.setContext(context);
-        source.onNext(request);
+        nextRequest.setContext(context);
+        source.onNext(nextRequest);
         return context;
     }
 

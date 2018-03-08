@@ -35,17 +35,20 @@ public class NekoCatOkhttpDownloader implements NekoCatDownloader {
 
     private OkHttpClient client;
 
-    private Map<String, String> header = HashMap.of("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.81 Safari/537.36");
-
     @Override
     public NekoCatResponse apply(NekoCatRequest request) {
-        Headers headers = Headers.of(header.toJavaMap());
-        // TODO support HTTP POST
+        Headers headers = Headers.of(request.getAdditionalHeaders());
         Response execute = null;
         try {
-            execute = client.newCall(new Request.Builder()
-                    .get()
-                    .url(request.getUrl()).headers(headers)
+            Request.Builder builder = new Request.Builder();
+            if ("GET".equalsIgnoreCase(request.getMethod())) {
+                builder = builder.get();
+            } else {
+                builder = builder.post(RequestBody.create(MediaType.parse(headers.get("content-type")), request.getRequestBody()));
+            }
+            builder = builder.url(request.getUrl());
+            builder = builder.headers(headers);
+            execute = client.newCall(builder
                     .build()
             ).execute();
             NekoCatResponse nekoCatResponse = new NekoCatResponse(execute.body().bytes());

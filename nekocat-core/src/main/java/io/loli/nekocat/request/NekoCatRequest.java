@@ -17,16 +17,16 @@ public class NekoCatRequest {
     private String url;
     private String method;
     private Map<String, String> additionalHeaders;
-    private Map<String, Object> requestBody;
+    private String requestBody;
     private NekoCatContext context;
     private NekoCatProperties properties;
 
 
     public NekoCatRequest(String url) {
-        this(url, "GET", new HashMap<>(), new HashMap<>());
+        this(url, "GET", new HashMap<>(), "");
     }
 
-    public NekoCatRequest(String url, String method, Map<String, String> additionalHeaders, Map<String, Object> requsetBody) {
+    public NekoCatRequest(String url, String method, Map<String, String> additionalHeaders, String requsetBody) {
         this.url = url;
         this.method = method;
         this.additionalHeaders = additionalHeaders;

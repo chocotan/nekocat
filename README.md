@@ -113,7 +113,12 @@ NekoCatSpider.builder()
     .build()
 ```
 
+### Add additional headers
+
+
+
 
 ## TODO
 1. spider scoped thread pool
 2. scheduled download
+3. unit test
