@@ -32,8 +32,10 @@ public class NekoCatResponse {
     }
 
     public void setContext(NekoCatContext context) {
-        this.context = context;
-        context.setResponse(this);
+        if (context != null) {
+            this.context = context;
+            context.setResponse(this);
+        }
     }
 
     public byte[] asBytes() {
@@ -65,7 +67,7 @@ public class NekoCatResponse {
     }
 
     public boolean isSuccess() {
-        return throwable != null;
+        return throwable == null;
     }
 
     public void setThrowable(Throwable throwable) {

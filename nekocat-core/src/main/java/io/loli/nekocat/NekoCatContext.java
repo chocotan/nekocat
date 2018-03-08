@@ -7,7 +7,7 @@ import lombok.Data;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicLong;
 
 
@@ -31,9 +31,9 @@ public class NekoCatContext {
     private PublishSubject<NekoCatRequest> source;
     private NekoCatRequest request;
     private NekoCatResponse response;
-    private NekoCatContext lastContext;
+    private CompletableFuture<Object> piplineResult = new CompletableFuture<>();
 
-
+    private Map<String, Object> nextAttributes = new HashMap<>();
     private Map<String, Object> attributes = new HashMap<>();
 
 
@@ -50,18 +50,13 @@ public class NekoCatContext {
      *
      * @param url the url that will be downloaded
      */
-    public void next(String url) {
+    public NekoCatContext next(String url) {
         NekoCatContext context = new NekoCatContext(source);
-        NekoCatRequest request = new NekoCatRequest(context);
-        request.setUrl(url);
-        context.setLastContext(this);
+        context.setAttributes(this.getNextAttributes());
+        NekoCatRequest request = new NekoCatRequest(url);
+        request.setContext(context);
         source.onNext(request);
-    }
-
-    private void setLastContext(NekoCatContext lastContext) {
-        this.lastContext = lastContext;
-        // clear reference for gc
-        lastContext.lastContext = null;
+        return context;
     }
 
 
@@ -69,8 +64,35 @@ public class NekoCatContext {
         attributes.put(key, value);
     }
 
+    public void addNextAttribute(String key, Object value) {
+        nextAttributes.put(key, value);
+    }
+
     public <T> T fetchAttribute(String key) {
         return (T) attributes.get(key);
     }
 
+    public void setResponse(NekoCatResponse response) {
+        this.response = response;
+    }
+
+    public <T> void setPiplineResult(T object) {
+        piplineResult.complete(object);
+    }
+
+    public void setPiplineException(Throwable exception) {
+        piplineResult.completeExceptionally(exception);
+    }
+
+
+    public synchronized void clearRef() {
+        if (this.response != null) {
+            this.response.setContext(null);
+            this.response = null;
+        }
+        if (this.request != null) {
+            this.request.setContext(null);
+            this.request = null;
+        }
+    }
 }

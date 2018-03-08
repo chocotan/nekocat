@@ -2,7 +2,6 @@ package io.loli.nekocat.downloader;
 
 import io.loli.nekocat.exception.DownloadException;
 import io.loli.nekocat.request.NekoCatRequest;
-import io.loli.nekocat.request.OkHttpResponseFuture;
 import io.loli.nekocat.response.NekoCatResponse;
 import javaslang.collection.HashMap;
 import javaslang.collection.Map;
@@ -41,8 +40,7 @@ public class NekoCatOkhttpDownloader implements NekoCatDownloader {
     @Override
     public NekoCatResponse apply(NekoCatRequest request) {
         Headers headers = Headers.of(header.toJavaMap());
-        OkHttpResponseFuture result = new OkHttpResponseFuture(request);
-
+        // TODO support HTTP POST
         Response execute = null;
         try {
             execute = client.newCall(new Request.Builder()

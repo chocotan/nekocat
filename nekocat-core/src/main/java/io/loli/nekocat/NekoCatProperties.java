@@ -1,11 +1,12 @@
 package io.loli.nekocat;
 
-import io.loli.nekocat.downloader.NekoCatDownloader;
-import io.loli.nekocat.downloader.NekoCatOkhttpDownloader;
 import io.loli.nekocat.interceptor.NekoCatInterceptor;
 import io.loli.nekocat.pipline.NekoCatPipline;
-import lombok.*;
-import org.omg.PortableInterceptor.Interceptor;
+import io.loli.nekocat.urlfilter.RegexUrlFilter;
+import io.loli.nekocat.urlfilter.UrlFilter;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class NekoCatProperties {
 
     private String name;
-    private String regex;
+    private UrlFilter urlFilter;
     private NekoCatPipline pipline;
     private Integer downloadMinPoolSize;
     private Integer downloadMaxPoolSize;
@@ -47,7 +48,7 @@ public class NekoCatProperties {
     public static class NekoCatPropertiesBuilder {
         private final static AtomicInteger idx = new AtomicInteger(0);
         private String name = "default" + idx.addAndGet(1);
-        private String regex;
+        private UrlFilter urlFilter;
         private NekoCatPipline pipline;
         private Integer downloadMinPoolSize = 1;
         private Integer downloadMaxPoolSize = 1;
@@ -69,7 +70,7 @@ public class NekoCatProperties {
         }
 
         public NekoCatProperties.NekoCatPropertiesBuilder regex(String regex) {
-            this.regex = regex;
+            this.urlFilter = new RegexUrlFilter(regex);
             return this;
         }
 
@@ -130,7 +131,7 @@ public class NekoCatProperties {
         }
 
         public NekoCatProperties build() {
-            return new NekoCatProperties(this.name, this.regex, this.pipline, this.downloadMinPoolSize, this.downloadMaxPoolSize, this.downloadMaxQueueSize, this.downloadThreadName, this.consumeMinPoolSize, this.consumeMaxPoolSize, this.consumeMaxQueueSize, this.consumeThreadName, this.consumer, this.interceptorList);
+            return new NekoCatProperties(this.name, this.urlFilter, this.pipline, this.downloadMinPoolSize, this.downloadMaxPoolSize, this.downloadMaxQueueSize, this.downloadThreadName, this.consumeMinPoolSize, this.consumeMaxPoolSize, this.consumeMaxQueueSize, this.consumeThreadName, this.consumer, this.interceptorList);
         }
 
 
