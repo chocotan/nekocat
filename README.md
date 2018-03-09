@@ -8,7 +8,7 @@ Add maven dependency
 <dependency>
     <groupId>io.loli.nekocat</groupId>
     <artifactId>nekocat-core</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
 </dependency>
 ```
 
@@ -138,17 +138,13 @@ request.setRequestBody("param1=value1&param2=value2");
 request.setMethod("POST");
 request.addHeader("content-type", "application/json");
 request.setRequestBody(your_json_str);
-
-
 ```
 
 
 
 ### Additional headers
-Use `AdditionalHeaderInterceptor`
 ```java
 request.addHeader(yourAdditionalHeader);
-
 ```
 
 
@@ -163,7 +159,6 @@ NekoCatSpider.builder()
     ...
     .interval(1000 * 60 * 10)
     ...
-
 ```
 
 
@@ -175,6 +170,5 @@ NekoCatProperties.builder()
     .regex(".*\\.jpg")
     .interval(1000)
     ...
-
 ```
 
