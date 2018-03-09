@@ -10,7 +10,7 @@ Add maven dependency
     <artifactId>nekocat-core</artifactId>
     <version>0.0.2</version>
 </dependency>
-```
+`````````
 
 
 
@@ -172,3 +172,5 @@ NekoCatProperties.builder()
     ...
 ```
 
+### TODO
+1. proxy pool
