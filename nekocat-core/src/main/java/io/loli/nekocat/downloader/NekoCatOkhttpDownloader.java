@@ -43,7 +43,7 @@ public class NekoCatOkhttpDownloader implements NekoCatDownloader {
                 builder = builder.get();
             } else {
                 String contentType = headers.get("content-type");
-                if(contentType==null){
+                if (contentType == null) {
                     contentType = "application/x-www-form-urlencoded";
                 }
                 builder = builder.post(RequestBody.create(MediaType.parse(contentType), request.getRequestBody()));

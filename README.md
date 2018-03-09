@@ -126,16 +126,28 @@ NekoCatSpider.builder()
 
 
 ### Http POST
-// TODO
+
+```java
+// form
+// value must be urlencoded
+request.setMethod("POST");
+request.setRequestBody("param1=value1&param2=value2");
+...
+
+// json
+request.setMethod("POST");
+request.addHeader("content-type", "application/json");
+request.setRequestBody(your_json_str);
+
+
+```
+
+
 
 ### Additional headers
-use `AdditionalHeaderInterceptor`
+Use `AdditionalHeaderInterceptor`
 ```java
-new AdditionalHeaderInterceptor(){
-    public void beforeDownload(NekoCatRequest request){
-        request.setAdditionalHeaders(yourAdditionalHeaders);
-    }
-}
+request.addHeader(yourAdditionalHeader);
 
 ```
 
@@ -149,7 +161,7 @@ NekoCatSpider.builder()
     .name("spiderName")
     .startUrl("http://www.example.com")
     ...
-    .interval(1000 * 60)
+    .interval(1000 * 60 * 10)
     ...
 
 ```
@@ -166,4 +178,3 @@ NekoCatProperties.builder()
 
 ```
 
-### start url

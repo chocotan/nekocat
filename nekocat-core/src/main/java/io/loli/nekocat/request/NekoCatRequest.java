@@ -40,4 +40,11 @@ public class NekoCatRequest {
             context.setRequest(this);
         }
     }
+
+    public void addHeader(String k, String v) {
+        if (additionalHeaders == null) {
+            additionalHeaders = new HashMap<>();
+        }
+        additionalHeaders.put(k, v);
+    }
 }
