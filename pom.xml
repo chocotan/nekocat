@@ -5,7 +5,7 @@
     <groupId>io.loli.nekocat</groupId>
     <artifactId>nekocat-parent</artifactId>
     <packaging>pom</packaging>
-    <version>0.0.2-SNAPSHOT</version>
+    <version>0.0.2</version>
 
     <modules>
         <module>nekocat-core</module>
@@ -47,7 +47,7 @@
         <connection>scm:git:git@github.com:chocotan/nekocat.git</connection>
         <url>https://github.com/chocotan/nekocat.git</url>
         <developerConnection>scm:git:git@github.com:chocotan/nekocat.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>nekocat-parent-0.0.2</tag>
     </scm>
 
     <distributionManagement>
