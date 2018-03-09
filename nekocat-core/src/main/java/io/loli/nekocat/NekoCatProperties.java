@@ -34,6 +34,7 @@ public class NekoCatProperties {
     private String consumeThreadName;
     private NekoCatPipline consumer;
     private List<NekoCatInterceptor> interceptorList;
+    private long interval;
 
 
     public void setInterceptorList(List<NekoCatInterceptor> interceptorList) {
@@ -59,6 +60,7 @@ public class NekoCatProperties {
         private Integer consumeMaxQueueSize = 1024;
         private String consumeThreadName = "nekocat-consume";
         private NekoCatPipline consumer;
+        private long interval;
         private List<NekoCatInterceptor> interceptorList = new ArrayList<>();
 
         NekoCatPropertiesBuilder() {
@@ -118,6 +120,10 @@ public class NekoCatProperties {
             this.consumeThreadName = consumeThreadName;
             return this;
         }
+        public NekoCatProperties.NekoCatPropertiesBuilder interval(Long interval) {
+            this.interval = interval;
+            return this;
+        }
 
 
         public NekoCatProperties.NekoCatPropertiesBuilder consumer(NekoCatPipline consumer) {
@@ -131,7 +137,7 @@ public class NekoCatProperties {
         }
 
         public NekoCatProperties build() {
-            return new NekoCatProperties(this.name, this.urlFilter, this.pipline, this.downloadMinPoolSize, this.downloadMaxPoolSize, this.downloadMaxQueueSize, this.downloadThreadName, this.consumeMinPoolSize, this.consumeMaxPoolSize, this.consumeMaxQueueSize, this.consumeThreadName, this.consumer, this.interceptorList);
+            return new NekoCatProperties(this.name, this.urlFilter, this.pipline, this.downloadMinPoolSize, this.downloadMaxPoolSize, this.downloadMaxQueueSize, this.downloadThreadName, this.consumeMinPoolSize, this.consumeMaxPoolSize, this.consumeMaxQueueSize, this.consumeThreadName, this.consumer, this.interceptorList, this.interval);
         }
 
 

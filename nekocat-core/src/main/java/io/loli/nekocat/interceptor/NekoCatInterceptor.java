@@ -5,8 +5,13 @@ import io.loli.nekocat.request.NekoCatRequest;
 import io.loli.nekocat.response.NekoCatResponse;
 
 public interface NekoCatInterceptor {
-    public default void beforeStart(NekoCatRequest startRequest) {
+    public default void beforeStart(String startUrl) {
     }
+
+
+    public default void beforeStop(String startUrl) {
+    }
+
 
     public default void beforeDownload(NekoCatRequest request) {
     }
@@ -15,15 +20,20 @@ public interface NekoCatInterceptor {
     }
 
 
-    void errorDownload(NekoCatResponse response, Throwable exception);
+    public default void errorDownload(NekoCatResponse response) {
+    }
+
+    ;
 
     public default void beforePipline(NekoCatResponse response) {
 
     }
 
-    public default void afterPipline(NekoCatContext context){
+    public default void afterPipline(NekoCatContext context) {
 
     }
 
-    void errorPipline(NekoCatContext context, Throwable exception);
+    public default void errorPipline(NekoCatContext context, Throwable throwable) {
+    }
+
 }

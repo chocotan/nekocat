@@ -2,10 +2,7 @@ package io.loli.nekocat;
 
 import io.loli.nekocat.request.NekoCatRequest;
 import io.loli.nekocat.response.NekoCatResponse;
-import io.mikael.urlbuilder.UrlBuilder;
-import io.reactivex.subjects.PublishSubject;
-import io.reactivex.subjects.UnicastSubject;
-import lombok.Data;
+import io.reactivex.processors.UnicastProcessor;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -35,7 +32,7 @@ public class NekoCatContext {
     /**
      * processing subject
      */
-    private UnicastSubject<NekoCatRequest> source;
+    private UnicastProcessor<NekoCatRequest> source;
     private NekoCatRequest request;
     private NekoCatResponse response;
     private CompletableFuture<Object> piplineResult = new CompletableFuture<>();
@@ -47,7 +44,7 @@ public class NekoCatContext {
     /**
      * @param source the subject for add urls what will be downloaded
      */
-    public NekoCatContext(UnicastSubject<NekoCatRequest> source) {
+    public NekoCatContext(UnicastProcessor<NekoCatRequest> source) {
         this.source = source;
     }
 

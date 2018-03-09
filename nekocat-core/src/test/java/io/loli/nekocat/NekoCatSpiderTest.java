@@ -75,7 +75,7 @@ public class NekoCatSpiderTest {
                 .build();
         spider.start();
         try {
-            Thread.sleep(1500L);
+            Thread.sleep(3500L);
         } catch (InterruptedException e) {
         }
 
@@ -154,6 +154,7 @@ public class NekoCatSpiderTest {
         Mockito.doThrow(new RuntimeException("error")).when(mock).apply(Mockito.any());
         NekoCatDownloader downloader = Mockito.mock(NekoCatDownloader.class);
         Mockito.doReturn(new NekoCatResponse()).when(downloader).apply(Mockito.any());
+        NekoCatInterceptor interceptor = Mockito.mock(NekoCatInterceptor.class);
         NekoCatSpider spider = NekoCatSpider.builder()
                 .startUrl("http://localhost:" + port)
                 .url(NekoCatProperties.builder()
@@ -162,9 +163,13 @@ public class NekoCatSpiderTest {
                         .pipline(mock)
                         .build())
                 .downloader(downloader)
+                .interceptor(interceptor)
                 .build();
         spider.start();
         Thread.sleep(2000L);
+
+        Mockito.verify(interceptor, Mockito.times(1)).errorPipline(Mockito.any(), Mockito.any());
+
     }
 
 
@@ -189,10 +194,13 @@ public class NekoCatSpiderTest {
         spider.start();
         Thread.sleep(2000L);
 
-//        Mockito.verify(interceptor, Mockito.times(2)).beforePipline(Mockito.any());
-//        Mockito.verify(interceptor, Mockito.times(2)).beforeDownload(Mockito.any());
-//        Mockito.verify(interceptor, Mockito.times(2)).afterDownload(Mockito.any());
+        spider.stop();
+
+        Mockito.verify(interceptor, Mockito.times(2)).beforePipline(Mockito.any());
+        Mockito.verify(interceptor, Mockito.times(2)).beforeDownload(Mockito.any());
+        Mockito.verify(interceptor, Mockito.times(2)).afterDownload(Mockito.any());
         Mockito.verify(interceptor, Mockito.times(2)).afterPipline(Mockito.any());
-        Mockito.verify(interceptor, Mockito.times(2)).beforeStart(Mockito.any());
+        Mockito.verify(interceptor, Mockito.times(1)).beforeStart(Mockito.any());
+        Mockito.verify(interceptor, Mockito.times(1)).beforeStop(Mockito.any());
     }
 }

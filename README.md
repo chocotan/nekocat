@@ -74,7 +74,7 @@ NekoCatSpider.builder()
     .url(NekoCatProperties.builder().regex("http://www.example.com/")
             .pipline(resp -> {
                 // select all images
-                resp.adDocument().select("img")
+                resp.asDocument().select("img")
                 .forEach(img->{
                     CompletableFuture<Object> result = resp.getContext().next(img.attr("src")).getPiplineResult();
                     // get the file returned by the next pipline
@@ -104,7 +104,7 @@ NekoCatSpider.builder()
     .url(NekoCatProperties.builder().regex("http://www.example.com/")
             .pipline(resp -> {
                 // select all images
-                resp.adDocument().select("img")
+                resp.asDocument().select("img")
                 .forEach(img->{
                     resp.getContext().addNextAttribute("storeFolder", "/tmp");
                     resp.getContext().next(img.attr("src"));
@@ -129,9 +129,41 @@ NekoCatSpider.builder()
 // TODO
 
 ### Additional headers
-// TODO
+use `AdditionalHeaderInterceptor`
+```java
+new AdditionalHeaderInterceptor(){
+    public void beforeDownload(NekoCatRequest request){
+        request.setAdditionalHeaders(yourAdditionalHeaders);
+    }
+}
+
+```
 
 
-## TODO
-1. spider scoped thread pool
-2. scheduled download
+
+### scheduled
+
+```java
+// spider will download the startUrl every 10 mins
+NekoCatSpider.builder()
+    .name("spiderName")
+    .startUrl("http://www.example.com")
+    ...
+    .interval(1000 * 60)
+    ...
+
+```
+
+
+
+
+```java
+// interval of each download 
+NekoCatProperties.builder()
+    .regex(".*\\.jpg")
+    .interval(1000)
+    ...
+
+```
+
+### start url
