@@ -44,7 +44,7 @@ public class LoggingInterceptor implements NekoCatInterceptor {
     @Override
 
     public void errorPipline(NekoCatContext context, Throwable exception) {
-        log.info("[{}] Finished: consume of url {}, cost={}, exception={}",
+        log.info("[{}] Finished: consume url {}, cost={}, exception={}",
                 context.getId(),
                 context.getRequest().getUrl(),
                 (System.currentTimeMillis() - (Long) context.fetchAttribute("downloadStart")), ExceptionUtils.getStackTrace(exception));

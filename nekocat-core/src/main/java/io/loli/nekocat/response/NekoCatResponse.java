@@ -19,6 +19,7 @@ import java.nio.charset.Charset;
 public class NekoCatResponse {
     private NekoCatContext context;
     private byte[] bytes;
+    private String dataStr;
     private Document document;
 
     private Throwable throwable;
@@ -44,8 +45,12 @@ public class NekoCatResponse {
     }
 
     public String asString() {
+        if (dataStr != null) {
+            return dataStr;
+        }
         try {
-            return IOUtils.toString(bytes, "UTF-8");
+            dataStr = IOUtils.toString(bytes, "UTF-8");
+            return dataStr;
         } catch (IOException e) {
             throwable = e;
             throw new DownloadException(e);

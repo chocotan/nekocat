@@ -3,8 +3,6 @@ package io.loli.nekocat.downloader;
 import io.loli.nekocat.exception.DownloadException;
 import io.loli.nekocat.request.NekoCatRequest;
 import io.loli.nekocat.response.NekoCatResponse;
-import javaslang.collection.HashMap;
-import javaslang.collection.Map;
 import okhttp3.*;
 
 import java.net.CookieManager;
@@ -44,7 +42,11 @@ public class NekoCatOkhttpDownloader implements NekoCatDownloader {
             if ("GET".equalsIgnoreCase(request.getMethod())) {
                 builder = builder.get();
             } else {
-                builder = builder.post(RequestBody.create(MediaType.parse(headers.get("content-type")), request.getRequestBody()));
+                String contentType = headers.get("content-type");
+                if(contentType==null){
+                    contentType = "application/x-www-form-urlencoded";
+                }
+                builder = builder.post(RequestBody.create(MediaType.parse(contentType), request.getRequestBody()));
             }
             builder = builder.url(request.getUrl());
             builder = builder.headers(headers);
@@ -52,7 +54,6 @@ public class NekoCatOkhttpDownloader implements NekoCatDownloader {
                     .build()
             ).execute();
             NekoCatResponse nekoCatResponse = new NekoCatResponse(execute.body().bytes());
-            nekoCatResponse.setContext(request.getContext());
             return nekoCatResponse;
         } catch (Exception e) {
             throw new DownloadException(e);

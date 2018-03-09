@@ -1,6 +1,8 @@
 package io.loli.nekocat.urlfilter;
 
-import java.util.function.Predicate;
+import io.loli.nekocat.request.NekoCatRequest;
+import io.reactivex.functions.Predicate;
 
-public interface UrlFilter extends Predicate<String> {
+
+public interface UrlFilter extends Predicate<NekoCatRequest> {
 }

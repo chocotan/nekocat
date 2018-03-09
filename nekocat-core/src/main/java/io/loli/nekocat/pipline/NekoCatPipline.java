@@ -1,10 +1,8 @@
 package io.loli.nekocat.pipline;
 
-import io.loli.nekocat.NekoCatContext;
 import io.loli.nekocat.response.NekoCatResponse;
+import io.reactivex.functions.Function;
 
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 /**
  * The response consumer

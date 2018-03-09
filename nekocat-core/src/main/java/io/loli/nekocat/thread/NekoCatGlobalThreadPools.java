@@ -35,10 +35,12 @@ public class NekoCatGlobalThreadPools {
         if (threadPoolExecutor != null && !threadPoolExecutor.isShutdown()) {
             threadPoolExecutor.shutdownNow();
         }
+        consumeThreadPoolMap.remove(key);
         ThreadPoolExecutor downloadPool = downloadThreadPoolMap.get(key);
         if (downloadPool != null && !downloadPool.isShutdown()) {
             downloadPool.shutdownNow();
         }
+        downloadThreadPoolMap.remove(key);
     }
 
 

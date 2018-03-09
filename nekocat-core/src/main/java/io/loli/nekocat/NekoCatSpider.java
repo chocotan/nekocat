@@ -6,8 +6,13 @@ import io.loli.nekocat.interceptor.NekoCatInterceptor;
 import io.loli.nekocat.request.NekoCatRequest;
 import io.loli.nekocat.response.NekoCatResponse;
 import io.reactivex.Observable;
+import io.reactivex.Observer;
+import io.reactivex.Scheduler;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subjects.ReplaySubject;
+import io.reactivex.subjects.UnicastSubject;
 import javaslang.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -26,24 +31,22 @@ import static io.loli.nekocat.thread.NekoCatGlobalThreadPools.shutdown;
 public class NekoCatSpider {
     private String startUrl;
     private String name;
-    private PublishSubject<NekoCatRequest> source;
+    private UnicastSubject<NekoCatRequest> source;
 
     private List<NekoCatProperties> consumers;
     private NekoCatDownloader downloader;
     private List<NekoCatInterceptor> interceptors;
-    private Disposable subscribeResult;
     private long stopAfterEmmitMillis;
-    private AtomicLong lastRequestEmmitTime;
     private List<Future> futures = new ArrayList<>();
 
 
+    private List<Disposable> disposables = new CopyOnWriteArrayList<>();
     private AtomicBoolean stop = new AtomicBoolean(false);
 
 
-    private NekoCatSpider(String startUrl, String name, PublishSubject<NekoCatRequest> source, List<NekoCatProperties> consumers, NekoCatDownloader downloader, List<NekoCatInterceptor> interceptors, long stopAfterEmmitMillis) {
+    private NekoCatSpider(String startUrl, String name, List<NekoCatProperties> consumers, NekoCatDownloader downloader, List<NekoCatInterceptor> interceptors, long stopAfterEmmitMillis) {
         this.startUrl = startUrl;
         this.name = name;
-        this.source = source;
         this.consumers = consumers;
         this.downloader = downloader;
         this.interceptors = interceptors;
@@ -52,104 +55,120 @@ public class NekoCatSpider {
 
 
     public void start() {
-        // merge interceptors
-        consumers.forEach(
-                c -> {
-                    List<NekoCatInterceptor> mergedInterceptors = new ArrayList<>();
-                    mergedInterceptors.addAll(interceptors);
-                    mergedInterceptors.addAll(c.getInterceptorList());
-                    c.setInterceptorList(mergedInterceptors);
-                }
-        );
-
+        stop.set(false);
+        source = UnicastSubject.create();
         Observable<NekoCatRequest> observable = source;
-        // stop schedule
         if (stopAfterEmmitMillis > 0) {
-            lastRequestEmmitTime = new AtomicLong(0);
-            ScheduledExecutorService stopSchedule = Executors.newScheduledThreadPool(1);
-            stopSchedule.scheduleAtFixedRate(() -> {
-                if (lastRequestEmmitTime.get() != 0) {
-                    if (System.currentTimeMillis() - lastRequestEmmitTime.get() > stopAfterEmmitMillis) {
-                        log.info("[{}] No request emitted from source for {} ms, spider will stop and all executors will be shutdown", name, stopAfterEmmitMillis);
+            observable = source.timeout(stopAfterEmmitMillis, TimeUnit.MILLISECONDS)
+                    .doOnError(excep -> {
                         stop();
-                        stopSchedule.shutdown();
-                    }
-                }
-            }, 1000, 1000, TimeUnit.MILLISECONDS);
-            observable = source
-                    .doOnNext(req -> lastRequestEmmitTime.set(System.currentTimeMillis()));
+                    });
         }
-        subscribeResult = observable
-                .subscribe(request -> {
-                    if (stop.get()) {
-                        log.info("Spider [{}] is marked stopped", name);
-                        return;
-                    }
-                    consumers.stream()
-                            .filter(c -> c.getUrlFilter().test(request.getUrl()))
-                            .peek(properties -> request.getContext().setProperties(properties))
-                            .forEach(c -> {
-                                try {
-                                    CompletableFuture<Void> runFuture = CompletableFuture
-                                            .completedFuture(request)
-                                            .thenApplyAsync(req -> {
-                                                c.getInterceptorList().forEach(i -> Try.run(() -> i.beforeDownload(req))
-                                                        .onFailure(exception -> log.warn("[{}] Error occurred while execute interceptor before download, {}", request.getContext().getId(), ExceptionUtils.getStackTrace(exception))));
-                                                return req;
-                                            }, getDownloadExecutor(c, name))
-                                            .thenApply(downloader)
-                                            .exceptionally(excep -> {
-                                                NekoCatResponse response = new NekoCatResponse();
-                                                response.setThrowable(excep);
-                                                response.setContext(request.getContext());
-                                                c.getInterceptorList().forEach(i -> Try.run(() -> i.errorDownload(response, excep))
-                                                        .onFailure(exception -> log.warn("[{}] Error occurred while execute interceptor error download, {}", request.getContext().getId(), ExceptionUtils.getStackTrace(exception))));
-                                                return response;
-                                            })
-                                            .thenApply(resp -> {
-                                                c.getInterceptorList().forEach(i -> Try.run(() -> i.afterDownload(resp))
-                                                        .onFailure(exception -> log.info("[{}] Error occurred while execute interceptor after download, {}", request.getContext().getId(), ExceptionUtils.getStackTrace(exception))));
-                                                return resp;
-                                            })
-                                            .thenApplyAsync(response -> {
-                                                c.getInterceptorList().forEach(i -> Try.run(() -> i.beforePipline(response))
-                                                        .onFailure(exception -> log.info("[{}] Error occurred while execute interceptor before pipline, {}", request.getContext().getId(), ExceptionUtils.getStackTrace(exception))));
-                                                return response;
-                                            }, getConsumeExecutor(c, name))
-                                            .thenApplyAsync(c.getPipline())
-                                            .thenAccept(r -> request.getContext().setPiplineResult(r))
-                                            .exceptionally(excep -> {
-                                                c.getInterceptorList().forEach(i -> Try.run(() -> i.errorPipline(request.getContext(), excep))
-                                                        .onFailure(exception -> log.warn("[{}] Error occurred while execute interceptor error pipline, {}", request.getContext().getId(), ExceptionUtils.getStackTrace(exception))));
-                                                return null;
-                                            })
-                                            .thenRun(() -> {
-                                                c.getInterceptorList().forEach(i -> Try.run(() -> i.afterPipline(request.getContext()))
-                                                        .onFailure(exception -> log.info("[{}] Error occurred while execute interceptor after pipline, {}", request.getContext().getId(), ExceptionUtils.getStackTrace(exception))));
-                                            });
-                                    futures.add(runFuture);
 
-                                } catch (Exception e) {
-                                    log.warn("[{}] Error occurred while downloading or consuming response, {}", request.getContext().getId(), ExceptionUtils.getStackTrace(e));
-                                }
-                            });
-                });
+        List<Observer<NekoCatRequest>> subjects = new ArrayList<>();
+
+        consumers.forEach(p -> {
+            List<NekoCatInterceptor> mergedInterceptors = new ArrayList<>();
+            mergedInterceptors.addAll(interceptors);
+            mergedInterceptors.addAll(p.getInterceptorList());
+            p.setInterceptorList(mergedInterceptors);
+            UnicastSubject<NekoCatRequest> subject = UnicastSubject.create();
+            Disposable subscribe = subject
+                    .filter(p.getUrlFilter())
+                    .doOnNext(r -> {
+                        r.getContext().setSource(source);
+                        r.getContext().setProperties(p);
+                        p.getInterceptorList().forEach(i -> i.beforeStart(r));
+                    })
+                    .subscribeOn(Schedulers.from(getDownloadExecutor(p, name)))
+                    .doOnNext(r -> p.getInterceptorList().forEach(i -> i.beforeDownload(r)))
+                    .map(r -> Try.of(() -> downloader.apply(r))
+                            .onSuccess(res-> res.setContext(r.getContext()))
+                            .getOrElseGet(
+                                    (error) -> {
+                                        NekoCatResponse response = new NekoCatResponse();
+                                        response.setContext(r.getContext());
+                                        response.setThrowable(error);
+                                        return response;
+                                    }
+                            ))
+                    .doOnNext(r -> p.getInterceptorList().forEach(i -> i.afterDownload(r)))
+                    .observeOn(Schedulers.from(getConsumeExecutor(p, name)))
+                    .doOnNext(r -> p.getInterceptorList().forEach(i -> i.beforePipline(r)))
+                    .doOnNext(r -> Try.of(() -> p.getPipline().apply(r))
+                            .onSuccess(resp -> {
+                                r.getContext().setPiplineResult(resp);
+                            }).onFailure(excep -> {
+                                r.getContext().setPiplineException(excep);
+                            }))
+                    .doOnNext(r -> p.getInterceptorList().forEach(i -> i.afterPipline(r.getContext())))
+                    .retry()
+                    .subscribe();
+
+            subjects.add(subject);
+            disposables.add(subscribe);
+        });
+
+        Disposable subscribe = observable
+                .doOnNext(url -> {
+                    subjects.forEach(o -> {
+                        o.onNext(url);
+                    });
+                })
+                .retry()
+                .subscribe();
+        disposables.add(subscribe);
         NekoCatContext context = new NekoCatContext(source);
         NekoCatRequest request = new NekoCatRequest(startUrl);
         request.setContext(context);
-        interceptors.forEach(i -> i.beforeStart(request));
         source.onNext(request);
     }
 
+    public String getStartUrl() {
+        return startUrl;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public UnicastSubject<NekoCatRequest> getSource() {
+        return source;
+    }
+
+    public List<NekoCatProperties> getConsumers() {
+        return consumers;
+    }
+
+    public NekoCatDownloader getDownloader() {
+        return downloader;
+    }
+
+    public List<NekoCatInterceptor> getInterceptors() {
+        return interceptors;
+    }
+
+    public long getStopAfterEmmitMillis() {
+        return stopAfterEmmitMillis;
+    }
+
+
+    public List<Future> getFutures() {
+        return futures;
+    }
+
+    public AtomicBoolean getStop() {
+        return stop;
+    }
 
     public void stop() {
         stop.set(true);
-        source.onComplete();
-//        futures.forEach(f -> f.cancel(true));
-        consumers.forEach(c -> shutdown(c, name));
-        if (!subscribeResult.isDisposed()) {
-            subscribeResult.dispose();
-        }
+        disposables.forEach(disposable -> {
+            if (!disposable.isDisposed()) {
+                disposable.dispose();
+            }
+        });
+        disposables.clear();
     }
 
     public static NekoCatSpiderBuilder builder() {
@@ -159,8 +178,7 @@ public class NekoCatSpider {
 
     public static class NekoCatSpiderBuilder {
         private String startUrl;
-        private String name;
-        private PublishSubject<NekoCatRequest> source;
+        private String name = "spider";
         private List<NekoCatProperties> consumers = new ArrayList<>();
         private NekoCatDownloader downloader;
         private List<NekoCatInterceptor> interceptors = new ArrayList<>();
@@ -176,11 +194,6 @@ public class NekoCatSpider {
 
         public NekoCatSpider.NekoCatSpiderBuilder name(String name) {
             this.name = name;
-            return this;
-        }
-
-        public NekoCatSpider.NekoCatSpiderBuilder source(PublishSubject<NekoCatRequest> source) {
-            this.source = source;
             return this;
         }
 
@@ -207,13 +220,11 @@ public class NekoCatSpider {
 
 
         public NekoCatSpider build() {
-            if (this.source == null) {
-                this.source = PublishSubject.create();
-            }
             if (this.downloader == null) {
                 this.downloader = new NekoCatOkhttpDownloader();
             }
-            return new NekoCatSpider(this.startUrl, this.name, this.source, this.consumers, this.downloader, this.interceptors, stopAfterEmmitMillis);
+
+            return new NekoCatSpider(this.startUrl, this.name, this.consumers, this.downloader, this.interceptors, stopAfterEmmitMillis);
         }
 
     }

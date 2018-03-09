@@ -2,9 +2,15 @@ package io.loli.nekocat;
 
 import io.loli.nekocat.request.NekoCatRequest;
 import io.loli.nekocat.response.NekoCatResponse;
+import io.mikael.urlbuilder.UrlBuilder;
 import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subjects.UnicastSubject;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -14,7 +20,8 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * Stores info of a request
  */
-@Data
+@Getter
+@Setter
 public class NekoCatContext {
     private final static AtomicLong idx = new AtomicLong(0);
 
@@ -28,7 +35,7 @@ public class NekoCatContext {
     /**
      * processing subject
      */
-    private PublishSubject<NekoCatRequest> source;
+    private UnicastSubject<NekoCatRequest> source;
     private NekoCatRequest request;
     private NekoCatResponse response;
     private CompletableFuture<Object> piplineResult = new CompletableFuture<>();
@@ -40,7 +47,7 @@ public class NekoCatContext {
     /**
      * @param source the subject for add urls what will be downloaded
      */
-    public NekoCatContext(PublishSubject<NekoCatRequest> source) {
+    public NekoCatContext(UnicastSubject<NekoCatRequest> source) {
         this.source = source;
     }
 
@@ -61,6 +68,13 @@ public class NekoCatContext {
      * @param nextRequest the request that will be downloaded
      */
     public NekoCatContext next(NekoCatRequest nextRequest) {
+        String nextUrl = nextRequest.getUrl();
+        try {
+            nextUrl = new URL(new URL(request.getUrl()), nextUrl).toString();
+        } catch (MalformedURLException ignored) {
+        }
+
+        nextRequest.setUrl(nextUrl);
         NekoCatContext context = new NekoCatContext(source);
         context.addNextAttribute("lastUrl", request.getUrl());
         context.setAttributes(this.getNextAttributes());

@@ -1,5 +1,7 @@
 package io.loli.nekocat.urlfilter;
 
+import io.loli.nekocat.request.NekoCatRequest;
+
 public class RegexUrlFilter implements UrlFilter {
     private String regex;
 
@@ -7,8 +9,9 @@ public class RegexUrlFilter implements UrlFilter {
         this.regex = regex;
     }
 
+
     @Override
-    public boolean test(String url) {
-        return url.matches(regex);
+    public boolean test(NekoCatRequest request) throws Exception {
+        return request.getUrl().matches(regex);
     }
 }

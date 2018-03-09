@@ -21,7 +21,7 @@ public interface NekoCatInterceptor {
 
     }
 
-    public default void afterPipline(NekoCatContext response) {
+    public default void afterPipline(NekoCatContext context){
 
     }
 
