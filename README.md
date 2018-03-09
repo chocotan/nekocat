@@ -3,6 +3,17 @@
 
 ## Ussage
 
+Add maven dependency
+```xml
+<dependency>
+    <groupId>io.loli.nekocat</groupId>
+    <artifactId>nekocat-core</artifactId>
+    <version>0.0.1</version>
+</dependency>
+```
+
+
+
 ```java
 NekoCatSpider.builder()
     .name("spiderName")
@@ -124,4 +135,3 @@ NekoCatSpider.builder()
 ## TODO
 1. spider scoped thread pool
 2. scheduled download
-3. unit test

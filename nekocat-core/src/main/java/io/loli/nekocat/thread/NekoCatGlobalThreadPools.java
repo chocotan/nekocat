@@ -1,10 +1,7 @@
 package io.loli.nekocat.thread;
 
 import io.loli.nekocat.NekoCatProperties;
-import sun.nio.ch.ThreadPool;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.*;
 
 public class NekoCatGlobalThreadPools {

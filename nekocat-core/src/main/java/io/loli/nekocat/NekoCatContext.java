@@ -56,6 +56,7 @@ public class NekoCatContext {
      * Add url that will be downloaded
      *
      * @param url the url that will be downloaded
+     * @return return the next NekoCatContext
      */
     public NekoCatContext next(String url) {
         return next(new NekoCatRequest(url));
@@ -66,6 +67,7 @@ public class NekoCatContext {
      * Add request that will be downloaded
      *
      * @param nextRequest the request that will be downloaded
+     * @return return the next NekoCatContext
      */
     public NekoCatContext next(NekoCatRequest nextRequest) {
         String nextUrl = nextRequest.getUrl();
