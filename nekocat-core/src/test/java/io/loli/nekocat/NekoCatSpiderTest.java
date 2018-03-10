@@ -155,6 +155,8 @@ public class NekoCatSpiderTest {
         NekoCatDownloader downloader = Mockito.mock(NekoCatDownloader.class);
         Mockito.doReturn(new NekoCatResponse()).when(downloader).apply(Mockito.any());
         NekoCatInterceptor interceptor = Mockito.mock(NekoCatInterceptor.class);
+        Mockito.doReturn(true).when(interceptor).beforeDownload(Mockito.any());
+        Mockito.doReturn(true).when(interceptor).beforePipline(Mockito.any());
         NekoCatSpider spider = NekoCatSpider.builder()
                 .startUrl("http://localhost:" + port)
                 .url(NekoCatProperties.builder()
@@ -180,6 +182,8 @@ public class NekoCatSpiderTest {
         NekoCatDownloader downloader = Mockito.mock(NekoCatDownloader.class);
         Mockito.doReturn(new NekoCatResponse()).when(downloader).apply(Mockito.any());
         NekoCatInterceptor interceptor = Mockito.mock(NekoCatInterceptor.class);
+        Mockito.doReturn(true).when(interceptor).beforeDownload(Mockito.any());
+        Mockito.doReturn(true).when(interceptor).beforePipline(Mockito.any());
         NekoCatSpider spider = NekoCatSpider.builder()
                 .startUrl("http://localhost:" + port)
                 .url(NekoCatProperties.builder()

@@ -145,7 +145,7 @@ public class NekoCatSpider {
     }
 
     private Predicate<NekoCatResponse> interceptorBeforePipline(NekoCatProperties p) {
-        return r -> p.getInterceptorList().stream().anyMatch(i -> i.beforePipline(r));
+        return r -> p.getInterceptorList().isEmpty() || p.getInterceptorList().stream().allMatch(i -> i.beforePipline(r));
     }
 
     private Consumer<NekoCatResponse> interceptorAfterDownload(NekoCatProperties p) {
@@ -168,7 +168,7 @@ public class NekoCatSpider {
 
 
     private Predicate<NekoCatRequest> interceptorBeforeDownload(NekoCatProperties p) {
-        return r -> p.getInterceptorList().stream().anyMatch(i -> i.beforeDownload(r));
+        return r -> p.getInterceptorList().isEmpty() || p.getInterceptorList().stream().allMatch(i -> i.beforeDownload(r));
     }
 
 
