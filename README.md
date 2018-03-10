@@ -162,8 +162,6 @@ NekoCatSpider.builder()
 ```
 
 
-
-
 ```java
 // interval of each download 
 NekoCatProperties.builder()
@@ -172,5 +170,15 @@ NekoCatProperties.builder()
     ...
 ```
 
+### filter urls that already downloaded
+```java
+NekoCatProperties.builder()
+    ...
+    .interceptor(new FilterDownloadedUrlInterceptor(1024))
+    ...
+
+```
+
 ### TODO
 1. proxy pool
+2. retry

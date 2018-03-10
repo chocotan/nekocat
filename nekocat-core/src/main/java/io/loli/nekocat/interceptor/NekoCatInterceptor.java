@@ -13,7 +13,8 @@ public interface NekoCatInterceptor {
     }
 
 
-    public default void beforeDownload(NekoCatRequest request) {
+    public default boolean beforeDownload(NekoCatRequest request) {
+        return true;
     }
 
     public default void afterDownload(NekoCatResponse response) {
@@ -23,10 +24,10 @@ public interface NekoCatInterceptor {
     public default void errorDownload(NekoCatResponse response) {
     }
 
-    ;
 
-    public default void beforePipline(NekoCatResponse response) {
 
+    public default boolean beforePipline(NekoCatResponse response) {
+        return true;
     }
 
     public default void afterPipline(NekoCatContext context) {

@@ -10,9 +10,10 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 public class LoggingInterceptor implements NekoCatInterceptor {
 
 
-    public void beforeDownload(NekoCatRequest request) {
+    public boolean beforeDownload(NekoCatRequest request) {
         request.getContext().addAttribute("downloadStart", System.currentTimeMillis());
         log.info("[{}] Start: download {}",request.getContext().getId(), request.getUrl());
+        return true;
     }
 
     public void afterDownload(NekoCatResponse response) {
@@ -27,11 +28,12 @@ public class LoggingInterceptor implements NekoCatInterceptor {
                 (System.currentTimeMillis() - (Long) response.getContext().fetchAttribute("downloadStart")), response.getThrowable() != null ? ExceptionUtils.getStackTrace(response.getThrowable()) : "");
     }
 
-    public void beforePipline(NekoCatResponse response) {
+    public boolean beforePipline(NekoCatResponse response) {
         response.getContext().addAttribute("consumeStart", System.currentTimeMillis());
         log.info("[{}] Start: consume url {}",
                 response.getContext().getId(),
                 response.getContext().getRequest().getUrl());
+        return true;
     }
 
     public void afterPipline(NekoCatContext context) {

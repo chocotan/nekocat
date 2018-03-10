@@ -11,6 +11,7 @@ import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
+import io.reactivex.functions.Predicate;
 import io.reactivex.processors.UnicastProcessor;
 import io.reactivex.schedulers.Schedulers;
 import javaslang.control.Try;
@@ -93,11 +94,11 @@ public class NekoCatSpider {
                     .filter(p.getUrlFilter())
                     .doOnNext(fillNekoCatContextAtBeginning(p))
                     .observeOn(Schedulers.from(getDownloadExecutor(p, name)))
-                    .doOnNext(interceptorBeforeDownload(p))
+                    .filter(interceptorBeforeDownload(p))
                     .map(downloadWithTry())
                     .doOnNext(interceptorAfterDownload(p))
                     .observeOn(Schedulers.from(getConsumeExecutor(p, name)))
-                    .doOnNext(interceptorBeforePipline(p))
+                    .filter(interceptorBeforePipline(p))
                     .doOnNext(piplineWithTry(p))
                     .doOnNext(interceptorAfterPipline(p))
                     .retry()
@@ -143,8 +144,8 @@ public class NekoCatSpider {
                 });
     }
 
-    private Consumer<NekoCatResponse> interceptorBeforePipline(NekoCatProperties p) {
-        return r -> p.getInterceptorList().forEach(i -> i.beforePipline(r));
+    private Predicate<NekoCatResponse> interceptorBeforePipline(NekoCatProperties p) {
+        return r -> p.getInterceptorList().stream().anyMatch(i -> i.beforePipline(r));
     }
 
     private Consumer<NekoCatResponse> interceptorAfterDownload(NekoCatProperties p) {
@@ -166,8 +167,8 @@ public class NekoCatSpider {
     }
 
 
-    private Consumer<NekoCatRequest> interceptorBeforeDownload(NekoCatProperties p) {
-        return r -> p.getInterceptorList().forEach(i -> i.beforeDownload(r));
+    private Predicate<NekoCatRequest> interceptorBeforeDownload(NekoCatProperties p) {
+        return r -> p.getInterceptorList().stream().anyMatch(i -> i.beforeDownload(r));
     }
 
 

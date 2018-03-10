@@ -18,6 +18,6 @@ public class NekoCatNamedThreadFactory implements ThreadFactory {
     @Override
     public Thread newThread(Runnable runnable) {
         threadIdx.add(1);
-        return new Thread(runnable, type + "-" + threadIdx.intValue() + "-" + suffix);
+        return new Thread(runnable, "nekocat" + "-" + threadIdx.intValue() + "-" + suffix + "-" + type);
     }
 }

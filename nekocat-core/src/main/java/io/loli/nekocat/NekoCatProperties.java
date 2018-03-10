@@ -48,17 +48,17 @@ public class NekoCatProperties {
 
     public static class NekoCatPropertiesBuilder {
         private final static AtomicInteger idx = new AtomicInteger(0);
-        private String name = "default" + idx.addAndGet(1);
+        private String name = "default-" + idx.addAndGet(1);
         private UrlFilter urlFilter;
         private NekoCatPipline pipline;
         private Integer downloadMinPoolSize = 1;
         private Integer downloadMaxPoolSize = 1;
         private Integer downloadMaxQueueSize = 1024;
-        private String downloadThreadName = "nekocat-download";
+        private String downloadThreadName = "download";
         private Integer consumeMinPoolSize = 1;
         private Integer consumeMaxPoolSize = 1;
         private Integer consumeMaxQueueSize = 1024;
-        private String consumeThreadName = "nekocat-consume";
+        private String consumeThreadName = "consume";
         private NekoCatPipline consumer;
         private long interval;
         private List<NekoCatInterceptor> interceptorList = new ArrayList<>();
@@ -120,6 +120,7 @@ public class NekoCatProperties {
             this.consumeThreadName = consumeThreadName;
             return this;
         }
+
         public NekoCatProperties.NekoCatPropertiesBuilder interval(Long interval) {
             this.interval = interval;
             return this;
