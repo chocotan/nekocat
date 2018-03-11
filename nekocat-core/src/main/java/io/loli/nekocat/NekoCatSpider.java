@@ -8,6 +8,7 @@ import io.loli.nekocat.response.NekoCatResponse;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.Observer;
+import io.reactivex.Scheduler;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
@@ -16,6 +17,7 @@ import io.reactivex.processors.UnicastProcessor;
 import io.reactivex.schedulers.Schedulers;
 import javaslang.control.Try;
 import lombok.extern.slf4j.Slf4j;
+import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscription;
 
 import java.sql.Time;
@@ -90,17 +92,22 @@ public class NekoCatSpider {
             if (p.getInterval() > 0) {
                 flowable = zipFlowableWithInterval(p, subject);
             }
+
             Disposable subscribe = flowable
                     .filter(p.getUrlFilter())
                     .doOnNext(fillNekoCatContextAtBeginning(p))
-                    .observeOn(Schedulers.from(getDownloadExecutor(p, name)))
+                    .parallel()
+                    .runOn(Schedulers.from(getDownloadExecutor(p, name)))
                     .filter(interceptorBeforeDownload(p))
                     .map(downloadWithTry())
                     .doOnNext(interceptorAfterDownload(p))
-                    .observeOn(Schedulers.from(getConsumeExecutor(p, name)))
+                    .sequential()
+                    .parallel()
+                    .runOn(Schedulers.from(getConsumeExecutor(p, name)))
                     .filter(interceptorBeforePipline(p))
                     .doOnNext(piplineWithTry(p))
                     .doOnNext(interceptorAfterPipline(p))
+                    .sequential()
                     .retry()
                     .subscribe();
             subjects.add(subject);
@@ -108,6 +115,7 @@ public class NekoCatSpider {
         });
 
         Disposable subscribe = observable
+                .flatMap(d -> Flowable.just(d).observeOn(Schedulers.newThread()))
                 .doOnSubscribe(interceptorBeforeStart())
                 .doOnNext(dispatchRequestToConsumer(subjects))
                 .retry()

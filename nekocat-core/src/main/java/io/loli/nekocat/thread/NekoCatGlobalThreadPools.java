@@ -11,7 +11,7 @@ public class NekoCatGlobalThreadPools {
 
     public static ThreadPoolExecutor getDownloadExecutor(NekoCatProperties properties, String spiderName) {
         String key = spiderName + "-" + properties.getName();
-        return downloadThreadPoolMap.computeIfAbsent(key, name -> new ThreadPoolExecutor(properties.getDownloadMinPoolSize(), properties.getDownloadMaxPoolSize(),
+        return downloadThreadPoolMap.computeIfAbsent(key, name -> new ThreadPoolExecutor(properties.getDownloadPoolSize(), properties.getDownloadPoolSize(),
                 0, TimeUnit.MILLISECONDS,
                 properties.getDownloadMaxQueueSize() == 0 ? new SynchronousQueue<>() :
                         new LinkedBlockingQueue<>(properties.getDownloadMaxQueueSize()), new NekoCatNamedThreadFactory(properties.getDownloadThreadName(), key)));
@@ -19,7 +19,7 @@ public class NekoCatGlobalThreadPools {
 
     public static ThreadPoolExecutor getConsumeExecutor(NekoCatProperties properties, String spiderName) {
         String key = spiderName + "-" + properties.getName();
-        return consumeThreadPoolMap.computeIfAbsent(key, name -> new ThreadPoolExecutor(properties.getConsumeMinPoolSize(), properties.getConsumeMaxPoolSize(),
+        return consumeThreadPoolMap.computeIfAbsent(key, name -> new ThreadPoolExecutor(properties.getConsumePoolSize(), properties.getConsumePoolSize(),
                 0, TimeUnit.MILLISECONDS,
                 properties.getConsumeMaxQueueSize() == 0 ? new SynchronousQueue<>() :
                         new LinkedBlockingQueue<>(properties.getConsumeMaxQueueSize()), new NekoCatNamedThreadFactory(properties.getConsumeThreadName(), key)));

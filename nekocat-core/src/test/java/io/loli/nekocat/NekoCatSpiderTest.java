@@ -3,10 +3,17 @@ package io.loli.nekocat;
 import io.loli.nekocat.app.NekoCatTestApplication;
 import io.loli.nekocat.downloader.NekoCatDownloader;
 import io.loli.nekocat.downloader.NekoCatOkhttpDownloader;
+import io.loli.nekocat.interceptor.LoggingInterceptor;
 import io.loli.nekocat.interceptor.NekoCatInterceptor;
 import io.loli.nekocat.pipline.NekoCatPipline;
 import io.loli.nekocat.request.NekoCatRequest;
 import io.loli.nekocat.response.NekoCatResponse;
+import io.reactivex.Flowable;
+import io.reactivex.Observable;
+import io.reactivex.Scheduler;
+import io.reactivex.processors.PublishProcessor;
+import io.reactivex.schedulers.Schedulers;
+import io.reactivex.subjects.PublishSubject;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,6 +22,12 @@ import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import java.util.Arrays;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 
 @SpringBootTest(classes = NekoCatTestApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -207,4 +220,6 @@ public class NekoCatSpiderTest {
         Mockito.verify(interceptor, Mockito.times(1)).beforeStart(Mockito.any());
         Mockito.verify(interceptor, Mockito.times(1)).beforeStop(Mockito.any());
     }
+
+
 }

@@ -24,12 +24,10 @@ public class NekoCatProperties {
     private String name;
     private UrlFilter urlFilter;
     private NekoCatPipline pipline;
-    private Integer downloadMinPoolSize;
-    private Integer downloadMaxPoolSize;
+    private Integer downloadPoolSize;
     private Integer downloadMaxQueueSize;
     private String downloadThreadName;
-    private Integer consumeMinPoolSize;
-    private Integer consumeMaxPoolSize;
+    private Integer consumePoolSize;
     private Integer consumeMaxQueueSize;
     private String consumeThreadName;
     private NekoCatPipline consumer;
@@ -51,12 +49,10 @@ public class NekoCatProperties {
         private String name = "default-" + idx.addAndGet(1);
         private UrlFilter urlFilter;
         private NekoCatPipline pipline;
-        private Integer downloadMinPoolSize = 1;
-        private Integer downloadMaxPoolSize = 1;
+        private Integer downloadPoolSize = 1;
         private Integer downloadMaxQueueSize = 1024;
         private String downloadThreadName = "download";
-        private Integer consumeMinPoolSize = 1;
-        private Integer consumeMaxPoolSize = 1;
+        private Integer consumePoolSize = 1;
         private Integer consumeMaxQueueSize = 1024;
         private String consumeThreadName = "consume";
         private NekoCatPipline consumer;
@@ -81,15 +77,11 @@ public class NekoCatProperties {
             return this;
         }
 
-        public NekoCatProperties.NekoCatPropertiesBuilder downloadMinPoolSize(Integer downloadMinPoolSize) {
-            this.downloadMinPoolSize = downloadMinPoolSize;
+        public NekoCatProperties.NekoCatPropertiesBuilder downloadPoolSize(Integer downloadPoolSize) {
+            this.downloadPoolSize = downloadPoolSize;
             return this;
         }
 
-        public NekoCatProperties.NekoCatPropertiesBuilder downloadMaxPoolSize(Integer downloadMaxPoolSize) {
-            this.downloadMaxPoolSize = downloadMaxPoolSize;
-            return this;
-        }
 
         public NekoCatProperties.NekoCatPropertiesBuilder downloadMaxQueueSize(Integer downloadMaxQueueSize) {
             this.downloadMaxQueueSize = downloadMaxQueueSize;
@@ -101,13 +93,8 @@ public class NekoCatProperties {
             return this;
         }
 
-        public NekoCatProperties.NekoCatPropertiesBuilder consumeMinPoolSize(Integer consumeMinPoolSize) {
-            this.consumeMinPoolSize = consumeMinPoolSize;
-            return this;
-        }
-
-        public NekoCatProperties.NekoCatPropertiesBuilder consumeMaxPoolSize(Integer consumeMaxPoolSize) {
-            this.consumeMaxPoolSize = consumeMaxPoolSize;
+        public NekoCatProperties.NekoCatPropertiesBuilder consumePoolSize(Integer consumePoolSize) {
+            this.consumePoolSize = consumePoolSize;
             return this;
         }
 
@@ -138,7 +125,8 @@ public class NekoCatProperties {
         }
 
         public NekoCatProperties build() {
-            return new NekoCatProperties(this.name, this.urlFilter, this.pipline, this.downloadMinPoolSize, this.downloadMaxPoolSize, this.downloadMaxQueueSize, this.downloadThreadName, this.consumeMinPoolSize, this.consumeMaxPoolSize, this.consumeMaxQueueSize, this.consumeThreadName, this.consumer, this.interceptorList, this.interval);
+            return new NekoCatProperties(this.name, this.urlFilter, this.pipline, this.downloadPoolSize,
+                    this.downloadMaxQueueSize, this.downloadThreadName, this.consumePoolSize, this.consumeMaxQueueSize, this.consumeThreadName, this.consumer, this.interceptorList, this.interval);
         }
 
 

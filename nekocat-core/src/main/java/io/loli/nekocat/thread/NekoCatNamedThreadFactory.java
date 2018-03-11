@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.LongAdder;
 public class NekoCatNamedThreadFactory implements ThreadFactory {
 
 
-    private final LongAdder threadIdx = new LongAdder();
+    private static final LongAdder threadIdx = new LongAdder();
     private final String type;
     private final String suffix;
 
