@@ -48,12 +48,10 @@ NekoCatSpider.builder()
 NekoCatProperties.builder()
     .regex(".*\\.jpg")
     ...
-    .downloadMinPoolSize(1)
-    .downloadMaxPoolSize(1)
+    .downloadPoolSize(1)
     .downloadMaxQueueSize(1024)
-    .consumeMinPoolSize(1)
-    .consumeMaxPoolSize(10)
-    .consumeMaxQueueSize(1024)
+    .piplinePoolSize(1)
+    .piplineMaxQueueSize(1024)
 ```
 
 ### Exit while no urls emitted

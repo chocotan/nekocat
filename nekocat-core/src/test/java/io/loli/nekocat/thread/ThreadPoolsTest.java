@@ -12,8 +12,8 @@ public class ThreadPoolsTest {
         NekoCatProperties properties = NekoCatProperties.builder()
                 .name("testurl")
                 .build();
-        ThreadPoolExecutor test1 = NekoCatGlobalThreadPools.getConsumeExecutor(properties, "testspider");
-        ThreadPoolExecutor test2 = NekoCatGlobalThreadPools.getConsumeExecutor(properties, "testspider");
+        ThreadPoolExecutor test1 = NekoCatGlobalThreadPools.getPiplineExecutor(properties, "testspider");
+        ThreadPoolExecutor test2 = NekoCatGlobalThreadPools.getPiplineExecutor(properties, "testspider");
         Assert.assertEquals(test1, test2);
         ThreadPoolExecutor test3 = NekoCatGlobalThreadPools.getDownloadExecutor(properties, "testspider");
         ThreadPoolExecutor test4 = NekoCatGlobalThreadPools.getDownloadExecutor(properties, "testspider");
@@ -26,8 +26,8 @@ public class ThreadPoolsTest {
         NekoCatProperties properties = NekoCatProperties.builder()
                 .name("testurl")
                 .build();
-        ThreadPoolExecutor test1 = NekoCatGlobalThreadPools.getConsumeExecutor(properties, "testspider");
-        ThreadPoolExecutor test2 = NekoCatGlobalThreadPools.getConsumeExecutor(properties, "testspider");
+        ThreadPoolExecutor test1 = NekoCatGlobalThreadPools.getPiplineExecutor(properties, "testspider");
+        ThreadPoolExecutor test2 = NekoCatGlobalThreadPools.getPiplineExecutor(properties, "testspider");
         NekoCatGlobalThreadPools.shutdown(properties, "testspider");
         Assert.assertTrue(test1.isShutdown());
         Assert.assertTrue(test2.isShutdown());

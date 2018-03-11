@@ -26,11 +26,8 @@ public class NekoCatProperties {
     private NekoCatPipline pipline;
     private Integer downloadPoolSize;
     private Integer downloadMaxQueueSize;
-    private String downloadThreadName;
-    private Integer consumePoolSize;
-    private Integer consumeMaxQueueSize;
-    private String consumeThreadName;
-    private NekoCatPipline consumer;
+    private Integer piplinePoolSize;
+    private Integer piplineMaxQueueSize;
     private List<NekoCatInterceptor> interceptorList;
     private long interval;
 
@@ -51,11 +48,9 @@ public class NekoCatProperties {
         private NekoCatPipline pipline;
         private Integer downloadPoolSize = 1;
         private Integer downloadMaxQueueSize = 1024;
-        private String downloadThreadName = "download";
-        private Integer consumePoolSize = 1;
-        private Integer consumeMaxQueueSize = 1024;
-        private String consumeThreadName = "consume";
-        private NekoCatPipline consumer;
+        private Integer piplinePoolSize = 1;
+        private Integer piplineMaxQueueSize = 1024;
+
         private long interval;
         private List<NekoCatInterceptor> interceptorList = new ArrayList<>();
 
@@ -72,10 +67,6 @@ public class NekoCatProperties {
             return this;
         }
 
-        public NekoCatProperties.NekoCatPropertiesBuilder pipline(NekoCatPipline pipline) {
-            this.pipline = pipline;
-            return this;
-        }
 
         public NekoCatProperties.NekoCatPropertiesBuilder downloadPoolSize(Integer downloadPoolSize) {
             this.downloadPoolSize = downloadPoolSize;
@@ -88,25 +79,17 @@ public class NekoCatProperties {
             return this;
         }
 
-        public NekoCatProperties.NekoCatPropertiesBuilder downloadThreadName(String downloadThreadName) {
-            this.downloadThreadName = downloadThreadName;
+
+        public NekoCatProperties.NekoCatPropertiesBuilder piplinePoolSize(Integer piplinePoolSize) {
+            this.piplinePoolSize = piplinePoolSize;
             return this;
         }
 
-        public NekoCatProperties.NekoCatPropertiesBuilder consumePoolSize(Integer consumePoolSize) {
-            this.consumePoolSize = consumePoolSize;
+        public NekoCatProperties.NekoCatPropertiesBuilder piplineMaxQueueSize(Integer piplineMaxQueueSize) {
+            this.piplineMaxQueueSize = piplineMaxQueueSize;
             return this;
         }
 
-        public NekoCatProperties.NekoCatPropertiesBuilder consumeMaxQueueSize(Integer consumeMaxQueueSize) {
-            this.consumeMaxQueueSize = consumeMaxQueueSize;
-            return this;
-        }
-
-        public NekoCatProperties.NekoCatPropertiesBuilder consumeThreadName(String consumeThreadName) {
-            this.consumeThreadName = consumeThreadName;
-            return this;
-        }
 
         public NekoCatProperties.NekoCatPropertiesBuilder interval(Long interval) {
             this.interval = interval;
@@ -114,8 +97,8 @@ public class NekoCatProperties {
         }
 
 
-        public NekoCatProperties.NekoCatPropertiesBuilder consumer(NekoCatPipline consumer) {
-            this.consumer = consumer;
+        public NekoCatProperties.NekoCatPropertiesBuilder pipline(NekoCatPipline pipline) {
+            this.pipline = pipline;
             return this;
         }
 
@@ -126,7 +109,7 @@ public class NekoCatProperties {
 
         public NekoCatProperties build() {
             return new NekoCatProperties(this.name, this.urlFilter, this.pipline, this.downloadPoolSize,
-                    this.downloadMaxQueueSize, this.downloadThreadName, this.consumePoolSize, this.consumeMaxQueueSize, this.consumeThreadName, this.consumer, this.interceptorList, this.interval);
+                    this.downloadMaxQueueSize, this.piplinePoolSize, this.piplineMaxQueueSize, this.interceptorList, this.interval);
         }
 
 

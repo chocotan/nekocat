@@ -1,5 +1,6 @@
 package io.loli.nekocat;
 
+import io.loli.nekocat.interceptor.NekoCatInterceptor;
 import io.loli.nekocat.request.NekoCatRequest;
 import io.loli.nekocat.response.NekoCatResponse;
 import io.reactivex.processors.UnicastProcessor;
@@ -8,7 +9,9 @@ import lombok.Setter;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicLong;
@@ -39,6 +42,7 @@ public class NekoCatContext {
 
     private Map<String, Object> nextAttributes = new HashMap<>();
     private Map<String, Object> attributes = new HashMap<>();
+    private List<NekoCatInterceptor> interceptorList = new ArrayList<>();
 
 
     /**

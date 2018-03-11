@@ -6,9 +6,6 @@ import io.loli.nekocat.interceptor.NekoCatInterceptor;
 import io.loli.nekocat.request.NekoCatRequest;
 import io.loli.nekocat.response.NekoCatResponse;
 import io.reactivex.Flowable;
-import io.reactivex.Observable;
-import io.reactivex.Observer;
-import io.reactivex.Scheduler;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
@@ -17,21 +14,17 @@ import io.reactivex.processors.UnicastProcessor;
 import io.reactivex.schedulers.Schedulers;
 import javaslang.control.Try;
 import lombok.extern.slf4j.Slf4j;
-import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscription;
 
-import java.sql.Time;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.LongStream;
-import java.util.stream.Stream;
 
-import static io.loli.nekocat.thread.NekoCatGlobalThreadPools.getConsumeExecutor;
 import static io.loli.nekocat.thread.NekoCatGlobalThreadPools.getDownloadExecutor;
+import static io.loli.nekocat.thread.NekoCatGlobalThreadPools.getPiplineExecutor;
 
 @Slf4j
 public class NekoCatSpider {
@@ -86,7 +79,6 @@ public class NekoCatSpider {
 
         List<UnicastProcessor<NekoCatRequest>> subjects = new ArrayList<>();
         consumers.forEach(p -> {
-            addSpiderInterceptorsIntoEachConsumer(p);
             UnicastProcessor<NekoCatRequest> subject = UnicastProcessor.create();
             Flowable<NekoCatRequest> flowable = subject;
             if (p.getInterval() > 0) {
@@ -96,14 +88,14 @@ public class NekoCatSpider {
             Disposable subscribe = flowable
                     .filter(p.getUrlFilter())
                     .doOnNext(fillNekoCatContextAtBeginning(p))
-                    .parallel()
+                    .parallel(p.getDownloadPoolSize())
                     .runOn(Schedulers.from(getDownloadExecutor(p, name)))
                     .filter(interceptorBeforeDownload(p))
                     .map(downloadWithTry())
                     .doOnNext(interceptorAfterDownload(p))
                     .sequential()
-                    .parallel()
-                    .runOn(Schedulers.from(getConsumeExecutor(p, name)))
+                    .parallel(p.getPiplinePoolSize())
+                    .runOn(Schedulers.from(getPiplineExecutor(p, name)))
                     .filter(interceptorBeforePipline(p))
                     .doOnNext(piplineWithTry(p))
                     .doOnNext(interceptorAfterPipline(p))
@@ -139,7 +131,10 @@ public class NekoCatSpider {
     }
 
     private Consumer<NekoCatResponse> interceptorAfterPipline(NekoCatProperties p) {
-        return r -> p.getInterceptorList().forEach(i -> i.afterPipline(r.getContext()));
+        return r -> {
+            List<NekoCatInterceptor> interceptorList = r.getContext().getInterceptorList();
+            interceptorList.forEach(i -> i.afterPipline(r.getContext()));
+        };
     }
 
     private Consumer<NekoCatResponse> piplineWithTry(NekoCatProperties p) {
@@ -148,16 +143,28 @@ public class NekoCatSpider {
                     r.getContext().setPiplineResult(resp);
                 }).onFailure(excep -> {
                     r.getContext().setPiplineException(excep);
-                    p.getInterceptorList().forEach(i -> i.errorPipline(r.getContext(), excep));
+                    mergeInterceptor(p).forEach(i -> i.errorPipline(r.getContext(), excep));
                 });
     }
 
     private Predicate<NekoCatResponse> interceptorBeforePipline(NekoCatProperties p) {
-        return r -> p.getInterceptorList().isEmpty() || p.getInterceptorList().stream().allMatch(i -> i.beforePipline(r));
+        return r -> {
+            List<NekoCatInterceptor> interceptorList = r.getContext().getInterceptorList();
+            return interceptorList.isEmpty() || interceptorList.stream().allMatch(i -> i.beforePipline(r));
+        };
+    }
+
+    private List<NekoCatInterceptor> mergeInterceptor(NekoCatProperties p) {
+        List<NekoCatInterceptor> interceptorList = new ArrayList<>();
+        interceptorList.addAll(interceptors);
+        interceptorList.addAll(p.getInterceptorList());
+        return interceptorList;
     }
 
     private Consumer<NekoCatResponse> interceptorAfterDownload(NekoCatProperties p) {
-        return r -> p.getInterceptorList().forEach(i -> i.afterDownload(r));
+        return r -> {
+            r.getContext().getInterceptorList().forEach(i -> i.afterDownload(r));
+        };
     }
 
     private Function<NekoCatRequest, NekoCatResponse> downloadWithTry() {
@@ -168,7 +175,7 @@ public class NekoCatSpider {
                             NekoCatResponse response = new NekoCatResponse();
                             response.setContext(r.getContext());
                             response.setThrowable(error);
-                            r.getProperties().getInterceptorList().forEach(i -> i.errorDownload(response));
+                            r.getContext().getInterceptorList().forEach(i -> i.errorDownload(response));
                             return response;
                         }
                 );
@@ -176,7 +183,10 @@ public class NekoCatSpider {
 
 
     private Predicate<NekoCatRequest> interceptorBeforeDownload(NekoCatProperties p) {
-        return r -> p.getInterceptorList().isEmpty() || p.getInterceptorList().stream().allMatch(i -> i.beforeDownload(r));
+        return r -> {
+            List<NekoCatInterceptor> interceptorList = r.getContext().getInterceptorList();
+            return interceptorList.isEmpty() || interceptorList.stream().allMatch(i -> i.beforeDownload(r));
+        };
     }
 
 
@@ -184,15 +194,9 @@ public class NekoCatSpider {
         return r -> {
             r.getContext().setSource(source);
             r.getContext().setProperties(p);
+            r.getContext().setInterceptorList(mergeInterceptor(p));
             r.setProperties(p);
         };
-    }
-
-    private void addSpiderInterceptorsIntoEachConsumer(NekoCatProperties p) {
-        List<NekoCatInterceptor> mergedInterceptors = new ArrayList<>();
-        mergedInterceptors.addAll(interceptors);
-        mergedInterceptors.addAll(p.getInterceptorList());
-        p.setInterceptorList(mergedInterceptors);
     }
 
     private Consumer<Long> startUrlIntervalAction() {
