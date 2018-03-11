@@ -222,4 +222,30 @@ public class NekoCatSpiderTest {
     }
 
 
+    @Test
+    public void testRetry() throws Exception {
+        NekoCatPipline mock = Mockito.mock(NekoCatPipline.class);
+        Mockito.doThrow(new RuntimeException("pipline")).when(mock).apply(Mockito.any());
+        NekoCatDownloader downloader = Mockito.mock(NekoCatDownloader.class);
+        Mockito.doThrow(new RuntimeException("download")).when(downloader).apply(Mockito.any());
+        NekoCatSpider spider = NekoCatSpider.builder()
+                .startUrl("http://localhost:" + port)
+                .url(NekoCatProperties.builder()
+                        .regex("http://localhost:" + port)
+                        .name("index")
+                        .pipline(mock)
+                        .downloadRetry(1)
+                        .piplineRetry(2)
+                        .build())
+                .downloader(downloader)
+                .interceptor(new LoggingInterceptor())
+                .build();
+        spider.start();
+        Thread.sleep(5000L);
+
+        Mockito.verify(downloader, Mockito.times(2)).apply(Mockito.any());
+        Mockito.verify(mock, Mockito.times(3)).apply(Mockito.any());
+    }
+
+
 }

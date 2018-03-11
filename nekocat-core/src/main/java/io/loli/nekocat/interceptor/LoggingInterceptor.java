@@ -24,7 +24,7 @@ public class LoggingInterceptor implements NekoCatInterceptor {
 
     @Override
     public void errorDownload(NekoCatResponse response) {
-        log.info("[{}] Error: download {}, cost={}, error={}", response.getContext().getId(), response.getContext().getRequest().getUrl(), response.isSuccess(),
+        log.info("[{}] Error: download {}, cost={}, error={}", response.getContext().getId(), response.getContext().getRequest().getUrl(),
                 (System.currentTimeMillis() - (Long) response.getContext().fetchAttribute("downloadStart")), response.getThrowable() != null ? ExceptionUtils.getStackTrace(response.getThrowable()) : "");
     }
 

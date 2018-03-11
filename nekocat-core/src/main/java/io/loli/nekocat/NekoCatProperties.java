@@ -30,6 +30,8 @@ public class NekoCatProperties {
     private Integer piplineMaxQueueSize;
     private List<NekoCatInterceptor> interceptorList;
     private long interval;
+    private int downloadRetry;
+    private int piplineRetry;
 
 
     public void setInterceptorList(List<NekoCatInterceptor> interceptorList) {
@@ -50,8 +52,10 @@ public class NekoCatProperties {
         private Integer downloadMaxQueueSize = 1024;
         private Integer piplinePoolSize = 1;
         private Integer piplineMaxQueueSize = 1024;
-
+        private int downloadRetry = 0;
+        private int piplineRetry = 0;
         private long interval;
+
         private List<NekoCatInterceptor> interceptorList = new ArrayList<>();
 
         NekoCatPropertiesBuilder() {
@@ -107,9 +111,20 @@ public class NekoCatProperties {
             return this;
         }
 
+        public NekoCatProperties.NekoCatPropertiesBuilder piplineRetry(int piplineRetry) {
+            this.piplineRetry = piplineRetry;
+            return this;
+        }
+
+        public NekoCatProperties.NekoCatPropertiesBuilder downloadRetry(int downloadRetry) {
+            this.downloadRetry = downloadRetry;
+            return this;
+        }
+
         public NekoCatProperties build() {
             return new NekoCatProperties(this.name, this.urlFilter, this.pipline, this.downloadPoolSize,
-                    this.downloadMaxQueueSize, this.piplinePoolSize, this.piplineMaxQueueSize, this.interceptorList, this.interval);
+                    this.downloadMaxQueueSize, this.piplinePoolSize, this.piplineMaxQueueSize, this.interceptorList, this.interval,
+                    this.downloadRetry, this.piplineRetry);
         }
 
 

@@ -168,7 +168,7 @@ NekoCatProperties.builder()
     ...
 ```
 
-### filter urls that already downloaded
+### filter duplicate url 
 ```java
 NekoCatProperties.builder()
     ...
@@ -177,6 +177,15 @@ NekoCatProperties.builder()
 
 ```
 
+### retry
+```java
+NekoCatProperties.builder()
+    ...
+    downloadRetry(1)
+    ...
+    piplineRetry(1)
+    ...
+```
+
 ### TODO
 1. proxy pool
-2. retry

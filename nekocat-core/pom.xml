@@ -32,9 +32,9 @@
             <version>3.7</version>
         </dependency>
         <dependency>
-            <groupId>io.javaslang</groupId>
-            <artifactId>javaslang</artifactId>
-            <version>2.0.6</version>
+            <groupId>io.vavr</groupId>
+            <artifactId>vavr</artifactId>
+            <version>0.9.2</version>
         </dependency>
         <dependency>
             <groupId>io.reactivex.rxjava2</groupId>
@@ -84,6 +84,11 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <version>2.0.0.RELEASE</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.mug</groupId>
+            <artifactId>mug</artifactId>
+            <version>1.8</version>
         </dependency>
     </dependencies>
 

@@ -1,5 +1,6 @@
 package io.loli.nekocat;
 
+import com.google.mu.util.Retryer;
 import io.loli.nekocat.downloader.NekoCatDownloader;
 import io.loli.nekocat.downloader.NekoCatOkhttpDownloader;
 import io.loli.nekocat.interceptor.NekoCatInterceptor;
@@ -12,10 +13,11 @@ import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
 import io.reactivex.processors.UnicastProcessor;
 import io.reactivex.schedulers.Schedulers;
-import javaslang.control.Try;
+import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import org.reactivestreams.Subscription;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -138,8 +140,15 @@ public class NekoCatSpider {
     }
 
     private Consumer<NekoCatResponse> piplineWithTry(NekoCatProperties p) {
-        return r -> Try.of(() -> p.getPipline().apply(r))
-                .onSuccess(resp -> {
+        return r ->
+                Try.of(() -> {
+                    if (p.getPiplineRetry() > 0) {
+                        return new Retryer()
+                                .upon(Throwable.class, Retryer.Delay.ofMillis(100).exponentialBackoff(1.5, p.getPiplineRetry()))
+                                .retryBlockingly(() -> p.getPipline().apply(r));
+                    }
+                    return p.getPipline().apply(r);
+                }).onSuccess(resp -> {
                     r.getContext().setPiplineResult(resp);
                 }).onFailure(excep -> {
                     r.getContext().setPiplineException(excep);
@@ -168,17 +177,22 @@ public class NekoCatSpider {
     }
 
     private Function<NekoCatRequest, NekoCatResponse> downloadWithTry() {
-        return r -> Try.of(() -> downloader.apply(r))
-                .onSuccess(res -> res.setContext(r.getContext()))
-                .getOrElseGet(
+        return r ->
+                Try.of(() -> {
+                    if (r.getProperties().getDownloadRetry() > 0) {
+                        return new Retryer()
+                                .upon(Throwable.class, Retryer.Delay.ofMillis(100).exponentialBackoff(1.5, r.getProperties().getDownloadRetry()))
+                                .retryBlockingly(() -> downloader.apply(r));
+                    }
+                    return downloader.apply(r);
+                }).onSuccess(res -> res.setContext(r.getContext())).getOrElseGet(
                         (error) -> {
                             NekoCatResponse response = new NekoCatResponse();
                             response.setContext(r.getContext());
                             response.setThrowable(error);
                             r.getContext().getInterceptorList().forEach(i -> i.errorDownload(response));
                             return response;
-                        }
-                );
+                        });
     }
 
 
