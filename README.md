@@ -1,7 +1,7 @@
 # A lightweight clawer framework
 
 
-## Ussage
+## Usage
 
 Add maven dependency
 ```xml
@@ -147,7 +147,7 @@ request.addHeader(yourAdditionalHeader);
 
 
 
-### scheduled
+### Scheduled
 
 ```java
 // spider will download the startUrl every 10 mins
@@ -168,7 +168,7 @@ NekoCatProperties.builder()
     ...
 ```
 
-### filter duplicate url 
+### Filter duplicate url 
 ```java
 NekoCatProperties.builder()
     ...
@@ -177,7 +177,7 @@ NekoCatProperties.builder()
 
 ```
 
-### retry
+### Retry
 ```java
 NekoCatProperties.builder()
     ...
