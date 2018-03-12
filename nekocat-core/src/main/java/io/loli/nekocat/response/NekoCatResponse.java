@@ -45,11 +45,15 @@ public class NekoCatResponse {
     }
 
     public String asString() {
+        return asString("UTF-8");
+    }
+
+    public String asString(String charset) {
         if (dataStr != null) {
             return dataStr;
         }
         try {
-            dataStr = IOUtils.toString(bytes, "UTF-8");
+            dataStr = IOUtils.toString(bytes, charset);
             return dataStr;
         } catch (IOException e) {
             throwable = e;
@@ -57,15 +61,18 @@ public class NekoCatResponse {
         }
     }
 
-    public Document asDocument() {
+    public Document asDocument(String charset) {
         if (this.document != null) {
             return this.document;
         }
-        Document parse = Jsoup.parse(asString());
+        Document parse = Jsoup.parse(asString(charset));
         this.document = parse;
         return parse;
     }
 
+    public Document asDocument() {
+        return asDocument("UTF-8");
+    }
 
     public NekoCatContext getContext() {
         return context;
