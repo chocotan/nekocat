@@ -1,4 +1,4 @@
-# A lightweight clawer framework
+# A lightweight crawler framework
 
 
 ## Usage
