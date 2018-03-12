@@ -155,7 +155,7 @@ NekoCatSpider.builder()
     .name("spiderName")
     .startUrl("http://www.example.com")
     ...
-    .interval(1000 * 60 * 10)
+    .loopInterval(1000 * 60 * 10)
     ...
 ```
 

@@ -40,6 +40,7 @@ public class NekoCatSpider {
     private long stopAfterEmmitMillis;
     private List<Future> futures = new ArrayList<>();
     private long interval;
+    private long loopInterval;
 
     private long startTime;
 
@@ -47,7 +48,8 @@ public class NekoCatSpider {
     private AtomicBoolean stop = new AtomicBoolean(false);
 
 
-    private NekoCatSpider(String startUrl, String name, List<NekoCatProperties> consumers, NekoCatDownloader downloader, List<NekoCatInterceptor> interceptors, long stopAfterEmmitMillis, long interval) {
+    private NekoCatSpider(String startUrl, String name, List<NekoCatProperties> consumers, NekoCatDownloader downloader, List<NekoCatInterceptor> interceptors, long stopAfterEmmitMillis, long interval,
+                          long loopInterval) {
         this.startUrl = startUrl;
         this.name = name;
         this.consumers = consumers;
@@ -55,6 +57,7 @@ public class NekoCatSpider {
         this.interceptors = interceptors;
         this.stopAfterEmmitMillis = stopAfterEmmitMillis;
         this.interval = interval;
+        this.loopInterval = loopInterval;
     }
 
 
@@ -67,24 +70,32 @@ public class NekoCatSpider {
         request.setContext(context);
 
         Flowable<NekoCatRequest> observable = source;
+        observable = observable.filter(p -> consumers.stream().anyMatch(c -> Try.of(() -> c.getUrlFilter().test(p))
+                .getOrElse(true)));
         if (stopAfterEmmitMillis > 0) {
             observable = observable.timeout(stopAfterEmmitMillis, TimeUnit.MILLISECONDS)
                     .doOnError(excep -> stop());
         }
-        // start url interval
+
         if (interval > 0) {
+            observable = zipFlowableWithInterval(interval, observable);
+
+        }
+        // start url interval
+        if (loopInterval > 0) {
             Disposable subscribe = Flowable.interval(interval, TimeUnit.MILLISECONDS)
                     .doOnNext(startUrlIntervalAction())
                     .subscribe();
             disposables.add(subscribe);
         }
 
+
         List<UnicastProcessor<NekoCatRequest>> subjects = new ArrayList<>();
         consumers.forEach(p -> {
             UnicastProcessor<NekoCatRequest> subject = UnicastProcessor.create();
             Flowable<NekoCatRequest> flowable = subject;
             if (p.getInterval() > 0) {
-                flowable = zipFlowableWithInterval(p, subject);
+                flowable = zipFlowableWithInterval(p.getInterval(), subject);
             }
 
             Disposable subscribe = flowable
@@ -128,8 +139,8 @@ public class NekoCatSpider {
         });
     }
 
-    private Flowable<NekoCatRequest> zipFlowableWithInterval(NekoCatProperties p, UnicastProcessor<NekoCatRequest> subject) {
-        return subject.zipWith(Flowable.interval(p.getInterval(), TimeUnit.MILLISECONDS), (item, interval) -> item);
+    private Flowable<NekoCatRequest> zipFlowableWithInterval(long p, Flowable<NekoCatRequest> subject) {
+        return subject.zipWith(Flowable.interval(p, TimeUnit.MILLISECONDS), (item, interval) -> item);
     }
 
     private Consumer<NekoCatResponse> interceptorAfterPipline(NekoCatProperties p) {
@@ -287,6 +298,7 @@ public class NekoCatSpider {
         private List<NekoCatInterceptor> interceptors = new ArrayList<>();
         private long stopAfterEmmitMillis;
         private long interval;
+        private long loopInterval;
 
         public NekoCatSpiderBuilder() {
         }
@@ -327,12 +339,18 @@ public class NekoCatSpider {
             return this;
         }
 
+
+        public NekoCatSpiderBuilder loopInterval(long loopInterval) {
+            this.loopInterval = loopInterval;
+            return this;
+        }
+
         public NekoCatSpider build() {
             if (this.downloader == null) {
                 this.downloader = new NekoCatOkhttpDownloader();
             }
 
-            return new NekoCatSpider(this.startUrl, this.name, this.consumers, this.downloader, this.interceptors, stopAfterEmmitMillis, interval);
+            return new NekoCatSpider(this.startUrl, this.name, this.consumers, this.downloader, this.interceptors, stopAfterEmmitMillis, interval, loopInterval);
         }
 
     }
