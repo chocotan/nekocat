@@ -40,6 +40,7 @@ NekoCatSpider.builder()
             })
             .build())
      .build()
+     .start();
 ```
 
 ### Thread pool
