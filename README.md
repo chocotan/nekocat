@@ -190,3 +190,4 @@ NekoCatProperties.builder()
 
 ### TODO
 1. proxy pool
+2. json export
