@@ -1,4 +1,4 @@
-# A lightweight clawer framework
+# A lightweight crawler framework
 
 
 ## Usage
@@ -8,7 +8,7 @@ Add maven dependency
 <dependency>
     <groupId>io.loli.nekocat</groupId>
     <artifactId>nekocat-core</artifactId>
-    <version>0.0.3</version>
+    <version>0.0.4</version>
 </dependency>
 ```
 
@@ -40,6 +40,7 @@ NekoCatSpider.builder()
             })
             .build())
      .build()
+     .start();
 ```
 
 ### Thread pool
