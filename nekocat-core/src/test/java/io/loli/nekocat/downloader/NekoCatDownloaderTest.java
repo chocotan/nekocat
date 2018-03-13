@@ -7,13 +7,10 @@ import io.loli.nekocat.response.NekoCatResponse;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.web.client.RestTemplate;
 
-import javax.validation.constraints.AssertFalse;
 import java.util.HashMap;
 
 @SpringBootTest(classes = NekoCatTestApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)

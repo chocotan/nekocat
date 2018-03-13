@@ -3,7 +3,6 @@ package io.loli.nekocat.thread;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.LongAdder;
 
 public class NekoCatNamedThreadFactory implements ThreadFactory {
 

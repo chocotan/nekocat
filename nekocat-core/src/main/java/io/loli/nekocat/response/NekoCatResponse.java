@@ -10,7 +10,6 @@ import org.jsoup.nodes.Document;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
 
 /**
  * The response class
