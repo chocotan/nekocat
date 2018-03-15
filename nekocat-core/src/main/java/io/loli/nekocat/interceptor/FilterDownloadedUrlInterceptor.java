@@ -12,6 +12,9 @@ public class FilterDownloadedUrlInterceptor implements NekoCatInterceptor {
 
     @Override
     public boolean beforeDownload(NekoCatRequest request) {
+        if (request.isForceDownload()) {
+            return true;
+        }
         if (urls.contains(request.getUrl())) {
             return false;
         }

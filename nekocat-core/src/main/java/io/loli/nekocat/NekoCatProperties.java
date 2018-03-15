@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class NekoCatProperties {
 
     private String name;
-    private UrlFilter urlFilter;
+    private List<UrlFilter> filters;
     private NekoCatPipline pipline;
     private Integer downloadPoolSize;
     private Integer downloadMaxQueueSize;
@@ -32,6 +32,7 @@ public class NekoCatProperties {
     private long interval;
     private int downloadRetry;
     private int piplineRetry;
+
 
 
     public void setInterceptorList(List<NekoCatInterceptor> interceptorList) {
@@ -46,7 +47,7 @@ public class NekoCatProperties {
     public static class NekoCatPropertiesBuilder {
         private final static AtomicInteger idx = new AtomicInteger(0);
         private String name = "default-" + idx.addAndGet(1);
-        private UrlFilter urlFilter;
+        private List<UrlFilter> filters = new ArrayList<>();
         private NekoCatPipline pipline;
         private Integer downloadPoolSize = 1;
         private Integer downloadMaxQueueSize = 1024;
@@ -67,10 +68,15 @@ public class NekoCatProperties {
         }
 
         public NekoCatProperties.NekoCatPropertiesBuilder regex(String regex) {
-            this.urlFilter = new RegexUrlFilter(regex);
+            this.filters.add(new RegexUrlFilter(regex));
             return this;
         }
 
+
+        public NekoCatProperties.NekoCatPropertiesBuilder filter(UrlFilter filter) {
+            this.filters.add(filter);
+            return this;
+        }
 
         public NekoCatProperties.NekoCatPropertiesBuilder downloadPoolSize(Integer downloadPoolSize) {
             this.downloadPoolSize = downloadPoolSize;
@@ -122,7 +128,7 @@ public class NekoCatProperties {
         }
 
         public NekoCatProperties build() {
-            return new NekoCatProperties(this.name, this.urlFilter, this.pipline, this.downloadPoolSize,
+            return new NekoCatProperties(this.name, this.filters, this.pipline, this.downloadPoolSize,
                     this.downloadMaxQueueSize, this.piplinePoolSize, this.piplineMaxQueueSize, this.interceptorList, this.interval,
                     this.downloadRetry, this.piplineRetry);
         }

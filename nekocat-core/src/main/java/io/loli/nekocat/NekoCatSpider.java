@@ -6,16 +6,15 @@ import io.loli.nekocat.downloader.NekoCatOkhttpDownloader;
 import io.loli.nekocat.interceptor.NekoCatInterceptor;
 import io.loli.nekocat.request.NekoCatRequest;
 import io.loli.nekocat.response.NekoCatResponse;
-import io.reactivex.Flowable;
+import io.reactivex.Observable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
-import io.reactivex.processors.UnicastProcessor;
 import io.reactivex.schedulers.Schedulers;
+import io.reactivex.subjects.UnicastSubject;
 import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
-import org.reactivestreams.Subscription;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +30,7 @@ import static io.loli.nekocat.thread.NekoCatGlobalThreadPools.getPiplineExecutor
 public class NekoCatSpider {
     private String startUrl;
     private String name;
-    private UnicastProcessor<NekoCatRequest> source;
+    private UnicastSubject<NekoCatRequest> source;
 
     private List<NekoCatProperties> consumers;
     private NekoCatDownloader downloader;
@@ -63,13 +62,13 @@ public class NekoCatSpider {
     public void start() {
         stop.set(false);
         startTime = System.currentTimeMillis();
-        source = UnicastProcessor.create();
+        source = UnicastSubject.create();
         NekoCatContext context = new NekoCatContext(source);
         NekoCatRequest request = new NekoCatRequest(startUrl);
         request.setContext(context);
 
-        Flowable<NekoCatRequest> observable = source;
-        observable = observable.filter(p -> consumers.stream().anyMatch(c -> Try.of(() -> c.getUrlFilter().test(p))
+        Observable<NekoCatRequest> observable = source;
+        observable = observable.filter(p -> consumers.stream().anyMatch(c -> Try.of(() -> c.getFilters().stream().anyMatch(a -> Try.of(() -> a.test(p)).getOrElse(true)))
                 .getOrElse(true)));
         if (stopAfterEmmitMillis > 0) {
             observable = observable.timeout(stopAfterEmmitMillis, TimeUnit.MILLISECONDS)
@@ -77,69 +76,72 @@ public class NekoCatSpider {
         }
 
         if (interval > 0) {
-            observable = zipFlowableWithInterval(interval, observable);
+            observable = zipObservableWithInterval(interval, observable);
 
         }
         // start url interval
         if (loopInterval > 0) {
-            Disposable subscribe = Flowable.interval(interval, TimeUnit.MILLISECONDS)
+            Disposable subscribe = Observable.interval(interval, TimeUnit.MILLISECONDS)
                     .doOnNext(startUrlIntervalAction())
                     .subscribe();
             disposables.add(subscribe);
         }
 
 
-        List<UnicastProcessor<NekoCatRequest>> subjects = new ArrayList<>();
+        List<UnicastSubject<NekoCatRequest>> subjects = new ArrayList<>();
         consumers.forEach(p -> {
-            UnicastProcessor<NekoCatRequest> subject = UnicastProcessor.create();
-            Flowable<NekoCatRequest> flowable = subject;
+            UnicastSubject<NekoCatRequest> subject = UnicastSubject.create();
+            Observable<NekoCatRequest> obs = subject.filter(d -> p.getFilters().stream().allMatch(f -> Try.of(() -> f.test(d)).getOrElse(true)));
+
+
             if (p.getInterval() > 0) {
-                flowable = zipFlowableWithInterval(p.getInterval(), subject);
+                obs = zipObservableWithInterval(p.getInterval(), obs);
             }
 
-            Disposable subscribe = flowable
-                    .filter(p.getUrlFilter())
-                    .doOnNext(fillNekoCatContextAtBeginning(p))
-                    .parallel(p.getDownloadPoolSize())
-                    .runOn(Schedulers.from(getDownloadExecutor(p, name)))
-                    .filter(interceptorBeforeDownload(p))
-                    .map(downloadWithTry())
-                    .doOnNext(interceptorAfterDownload(p))
-                    .sequential()
-                    .parallel(p.getPiplinePoolSize())
-                    .runOn(Schedulers.from(getPiplineExecutor(p, name)))
-                    .filter(interceptorBeforePipline(p))
-                    .doOnNext(piplineWithTry(p))
-                    .doOnNext(interceptorAfterPipline(p))
-                    .sequential()
-                    .retry()
+            Disposable subscribe = obs
+                    .flatMap(f -> Observable.just(f)
+                            .observeOn(Schedulers.from(getDownloadExecutor(p, name)))
+                            .doOnNext(fillNekoCatContextAtBeginning(p))
+                            .filter(interceptorBeforeDownload(p))
+                            .map(downloadWithTry())
+                            .doOnNext(interceptorAfterDownload(p))
+                            .retry()
+                    )
+                    .flatMap(f -> Observable.just(f)
+                            .observeOn(Schedulers.from(getPiplineExecutor(p, name)))
+                            .filter(interceptorBeforePipline(p))
+                            .doOnNext(piplineWithTry(p))
+                            .doOnNext(interceptorAfterPipline(p))
+                            .retry()
+
+                    )
                     .subscribe();
             subjects.add(subject);
             disposables.add(subscribe);
         });
 
         Disposable subscribe = observable
-                .flatMap(d -> Flowable.just(d).observeOn(Schedulers.newThread()))
+                .flatMap(d -> Observable.just(d).observeOn(Schedulers.newThread()))
                 .doOnSubscribe(interceptorBeforeStart())
                 .doOnNext(dispatchRequestToConsumer(subjects))
-                .retry()
+//                .retry()
                 .subscribe();
         disposables.add(subscribe);
         source.onNext(request);
     }
 
-    private Consumer<Subscription> interceptorBeforeStart() {
+    private Consumer<? super Disposable> interceptorBeforeStart() {
         return url -> interceptors.forEach(i -> i.beforeStart(startUrl));
     }
 
-    private Consumer<NekoCatRequest> dispatchRequestToConsumer(List<UnicastProcessor<NekoCatRequest>> subjects) {
+    private Consumer<NekoCatRequest> dispatchRequestToConsumer(List<UnicastSubject<NekoCatRequest>> subjects) {
         return url -> subjects.forEach(o -> {
             o.onNext(url);
         });
     }
 
-    private Flowable<NekoCatRequest> zipFlowableWithInterval(long p, Flowable<NekoCatRequest> subject) {
-        return subject.zipWith(Flowable.interval(p, TimeUnit.MILLISECONDS), (item, interval) -> item);
+    private Observable<NekoCatRequest> zipObservableWithInterval(long p, Observable<NekoCatRequest> subject) {
+        return subject.zipWith(Observable.interval(p, TimeUnit.MILLISECONDS), (item, interval) -> item);
     }
 
     private Consumer<NekoCatResponse> interceptorAfterPipline(NekoCatProperties p) {
@@ -240,7 +242,7 @@ public class NekoCatSpider {
         return name;
     }
 
-    public UnicastProcessor<NekoCatRequest> getSource() {
+    public UnicastSubject<NekoCatRequest> getSource() {
         return source;
     }
 

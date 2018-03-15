@@ -20,6 +20,7 @@ public class NekoCatRequest {
     private String requestBody;
     private NekoCatContext context;
     private NekoCatProperties properties;
+    private boolean forceDownload;
 
 
     public NekoCatRequest(String url) {
