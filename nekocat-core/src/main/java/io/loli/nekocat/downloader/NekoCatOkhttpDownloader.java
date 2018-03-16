@@ -16,13 +16,35 @@ import java.util.concurrent.TimeUnit;
  * the okhttp downloader implementation
  */
 @Builder
-@AllArgsConstructor
 public class NekoCatOkhttpDownloader implements NekoCatDownloader {
 
     private boolean saveCookie;
     private ProxySelector proxySelector;
     private OkHttpClient client;
 
+    public NekoCatOkhttpDownloader(boolean saveCookie, ProxySelector proxySelector, OkHttpClient okHttpClient) {
+        this.saveCookie = saveCookie;
+        this.proxySelector = proxySelector;
+        this.client = okHttpClient;
+        if (client == null) {
+            OkHttpClient.Builder builder = new OkHttpClient().newBuilder();
+            if (saveCookie) {
+                CookieManager cookieManager = new CookieManager();
+                cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
+                CookieJar cookieJar = new JavaNetCookieJar(cookieManager);
+                builder = builder.cookieJar(cookieJar);
+            }
+            if (proxySelector != null) {
+                builder.proxySelector(proxySelector);
+            }
+            // set default connection timeout
+            client = builder
+                    .connectTimeout(20, TimeUnit.SECONDS)
+                    .readTimeout(20, TimeUnit.SECONDS)
+                    .writeTimeout(20, TimeUnit.SECONDS)
+                    .build();
+        }
+    }
 
     public NekoCatOkhttpDownloader() {
         if (client == null) {
