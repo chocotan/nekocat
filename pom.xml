@@ -9,7 +9,6 @@
 
     <modules>
         <module>nekocat-core</module>
-        <module>nekocat-proxy-pool</module>
     </modules>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
