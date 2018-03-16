@@ -3,7 +3,6 @@ package io.loli.nekocat;
 import com.google.mu.util.Retryer;
 import io.loli.nekocat.downloader.NekoCatDownloader;
 import io.loli.nekocat.downloader.NekoCatOkhttpDownloader;
-import io.loli.nekocat.downloader.ProxySelector;
 import io.loli.nekocat.interceptor.NekoCatInterceptor;
 import io.loli.nekocat.request.NekoCatRequest;
 import io.loli.nekocat.response.NekoCatResponse;

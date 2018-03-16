@@ -3,35 +3,48 @@ package io.loli.nekocat.downloader;
 import io.loli.nekocat.exception.DownloadException;
 import io.loli.nekocat.request.NekoCatRequest;
 import io.loli.nekocat.response.NekoCatResponse;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import okhttp3.*;
 
 import java.net.CookieManager;
 import java.net.CookiePolicy;
+import java.net.ProxySelector;
 import java.util.concurrent.TimeUnit;
 
 /**
  * the okhttp downloader implementation
  */
+@Builder
+@AllArgsConstructor
 public class NekoCatOkhttpDownloader implements NekoCatDownloader {
 
-    private CookieManager cookieManager = new CookieManager();
+    private boolean saveCookie;
+    private ProxySelector proxySelector;
+    private OkHttpClient client;
 
-    {
-        cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
-    }
-
-    public CookieJar cookieJar = new JavaNetCookieJar(cookieManager);
 
     public NekoCatOkhttpDownloader() {
-        // set default connection timeout
-        client = new OkHttpClient().newBuilder().cookieJar(cookieJar)
-                .connectTimeout(20, TimeUnit.SECONDS)
-                .readTimeout(20, TimeUnit.SECONDS)
-                .writeTimeout(20, TimeUnit.SECONDS)
-                .build();
+        if (client == null) {
+            OkHttpClient.Builder builder = new OkHttpClient().newBuilder();
+            if (saveCookie) {
+                CookieManager cookieManager = new CookieManager();
+                cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
+                CookieJar cookieJar = new JavaNetCookieJar(cookieManager);
+                builder = builder.cookieJar(cookieJar);
+            }
+            if (proxySelector != null) {
+                builder.proxySelector(proxySelector);
+            }
+            // set default connection timeout
+            client = builder
+                    .connectTimeout(20, TimeUnit.SECONDS)
+                    .readTimeout(20, TimeUnit.SECONDS)
+                    .writeTimeout(20, TimeUnit.SECONDS)
+                    .build();
+        }
     }
 
-    private OkHttpClient client;
 
     @Override
     public NekoCatResponse apply(NekoCatRequest request) {
