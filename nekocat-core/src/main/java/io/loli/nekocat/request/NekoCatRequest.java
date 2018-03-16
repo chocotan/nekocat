@@ -5,6 +5,7 @@ import io.loli.nekocat.NekoCatProperties;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.net.Proxy;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,6 +22,7 @@ public class NekoCatRequest {
     private NekoCatContext context;
     private NekoCatProperties properties;
     private boolean forceDownload;
+    private Proxy proxy;
 
 
     public NekoCatRequest(String url) {

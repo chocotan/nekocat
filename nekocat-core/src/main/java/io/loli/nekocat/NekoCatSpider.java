@@ -3,6 +3,7 @@ package io.loli.nekocat;
 import com.google.mu.util.Retryer;
 import io.loli.nekocat.downloader.NekoCatDownloader;
 import io.loli.nekocat.downloader.NekoCatOkhttpDownloader;
+import io.loli.nekocat.downloader.ProxySelector;
 import io.loli.nekocat.interceptor.NekoCatInterceptor;
 import io.loli.nekocat.request.NekoCatRequest;
 import io.loli.nekocat.response.NekoCatResponse;
@@ -39,7 +40,6 @@ public class NekoCatSpider {
     private List<Future> futures = new ArrayList<>();
     private long interval;
     private long loopInterval;
-
     private long startTime;
 
     private List<Disposable> disposables = new CopyOnWriteArrayList<>();
@@ -124,7 +124,7 @@ public class NekoCatSpider {
                 .flatMap(d -> Observable.just(d).observeOn(Schedulers.newThread()))
                 .doOnSubscribe(interceptorBeforeStart())
                 .doOnNext(dispatchRequestToConsumer(subjects))
-//                .retry()
+                .retry()
                 .subscribe();
         disposables.add(subscribe);
         source.onNext(request);
@@ -221,6 +221,7 @@ public class NekoCatSpider {
             r.getContext().setSource(source);
             r.getContext().setProperties(p);
             r.getContext().setInterceptorList(mergeInterceptor(p));
+
             r.setProperties(p);
         };
     }
