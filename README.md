@@ -189,6 +189,6 @@ NekoCatProperties.builder()
 ```
 
 ### TODO
-1. proxy pool
-2. json export
-3. redis queue/db queue
+1. json export
+2. redis queue/db queue
+3. Thread Pool Factory

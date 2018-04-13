@@ -80,7 +80,7 @@ public class NekoCatSpider {
         }
         // start url interval
         if (loopInterval > 0) {
-            Disposable subscribe = Observable.interval(interval, TimeUnit.MILLISECONDS)
+            Disposable subscribe = Observable.interval(loopInterval, TimeUnit.MILLISECONDS)
                     .doOnNext(startUrlIntervalAction())
                     .subscribe();
             disposables.add(subscribe);
