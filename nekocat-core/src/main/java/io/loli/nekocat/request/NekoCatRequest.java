@@ -30,12 +30,16 @@ public class NekoCatRequest {
 
 
     public NekoCatRequest(String url) {
-        this(url, "GET", Collections.singletonMap("User-Agent", UA_DEFAULT), "");
+        this(url, "GET", null, "");
     }
 
     public NekoCatRequest(String url, String method, Map<String, String> additionalHeaders, String requsetBody) {
         this.url = url;
         this.method = method;
+        if (additionalHeaders == null) {
+            additionalHeaders = new HashMap<>();
+            additionalHeaders.put("User-Agent", UA_DEFAULT);
+        }
         this.additionalHeaders = additionalHeaders;
         this.requestBody = requsetBody;
     }
