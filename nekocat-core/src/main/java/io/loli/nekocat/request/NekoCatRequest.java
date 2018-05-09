@@ -4,10 +4,14 @@ import io.loli.nekocat.NekoCatContext;
 import io.loli.nekocat.NekoCatProperties;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.jsoup.helper.HttpConnection;
 
 import java.net.Proxy;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
+import static io.loli.nekocat.NekoCatConstants.UA_DEFAULT;
 
 /**
  * Class that stores url, method, request body  for each http request
@@ -26,7 +30,7 @@ public class NekoCatRequest {
 
 
     public NekoCatRequest(String url) {
-        this(url, "GET", new HashMap<>(), "");
+        this(url, "GET", Collections.singletonMap("User-Agent", UA_DEFAULT), "");
     }
 
     public NekoCatRequest(String url, String method, Map<String, String> additionalHeaders, String requsetBody) {
