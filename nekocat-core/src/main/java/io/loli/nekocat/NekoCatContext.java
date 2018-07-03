@@ -80,7 +80,8 @@ public class NekoCatContext {
         nextRequest.setUrl(nextUrl);
         NekoCatContext context = new NekoCatContext(source);
         context.addNextAttribute("lastUrl", request.getUrl());
-        context.setAttributes(this.getNextAttributes());
+        Map<String, Object> nextAttributes = this.getNextAttributes();
+        context.setAttributes(new HashMap<>(nextAttributes));
         nextRequest.setContext(context);
         source.onNext(nextRequest);
         return context;

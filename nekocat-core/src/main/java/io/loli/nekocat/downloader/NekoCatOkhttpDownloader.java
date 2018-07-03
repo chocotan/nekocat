@@ -18,8 +18,8 @@ import java.util.concurrent.TimeUnit;
 @Builder
 public class NekoCatOkhttpDownloader implements NekoCatDownloader {
 
-    private boolean saveCookie;
-    private ProxySelector proxySelector;
+    private boolean saveCookie = false;
+    private ProxySelector proxySelector = null;
     private OkHttpClient client;
 
     public NekoCatOkhttpDownloader(boolean saveCookie, ProxySelector proxySelector, OkHttpClient okHttpClient) {

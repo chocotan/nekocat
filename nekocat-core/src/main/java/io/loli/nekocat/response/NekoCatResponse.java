@@ -24,7 +24,7 @@ public class NekoCatResponse {
     private Throwable throwable;
 
     public NekoCatResponse(byte[] bytes) {
-        this.bytes = bytes;
+        this.bytes =  bytes;
     }
 
     public InputStream asStream() {
