@@ -1,5 +1,7 @@
 package io.loli.nekocat;
 
+import io.loli.nekocat.interceptor.ErrorLoggingInterceptor;
+import io.loli.nekocat.interceptor.LoggingInterceptor;
 import io.loli.nekocat.interceptor.NekoCatInterceptor;
 import io.loli.nekocat.pipline.NekoCatPipline;
 import io.loli.nekocat.urlfilter.RegexUrlFilter;
@@ -119,6 +121,15 @@ public class NekoCatProperties {
 
         public NekoCatProperties.NekoCatPropertiesBuilder piplineRetry(int piplineRetry) {
             this.piplineRetry = piplineRetry;
+            return this;
+        }
+
+        public NekoCatPropertiesBuilder log(){
+            interceptorList.add(new LoggingInterceptor());
+            return this;
+        }
+        public NekoCatPropertiesBuilder logError(){
+            interceptorList.add(new ErrorLoggingInterceptor());
             return this;
         }
 

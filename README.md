@@ -42,6 +42,22 @@ NekoCatSpider.builder()
      .build()
      .start();
 ```
+### Logging
+Nekocat provides two simple logging interceptors `LoggingInterceptor` and `ErrorLoggingInterceptor`
+
+`ErrorLoggingInterceptor` only log exceptions but `LoggingInterceptor` log all.
+
+```java
+NekoCatProperties.builder()
+    ...
+    .log()
+```
+
+```java
+NekoCatProperties.builder()
+    ...
+    .logError()
+```
 
 ### Thread pool
 

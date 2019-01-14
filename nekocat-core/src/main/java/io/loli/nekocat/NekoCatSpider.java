@@ -3,6 +3,8 @@ package io.loli.nekocat;
 import com.google.mu.util.Retryer;
 import io.loli.nekocat.downloader.NekoCatDownloader;
 import io.loli.nekocat.downloader.NekoCatOkhttpDownloader;
+import io.loli.nekocat.interceptor.ErrorLoggingInterceptor;
+import io.loli.nekocat.interceptor.LoggingInterceptor;
 import io.loli.nekocat.interceptor.NekoCatInterceptor;
 import io.loli.nekocat.request.NekoCatRequest;
 import io.loli.nekocat.response.NekoCatResponse;
@@ -316,6 +318,14 @@ public class NekoCatSpider {
 
         public NekoCatSpiderBuilder url(NekoCatProperties properties) {
             consumers.add(properties);
+            return this;
+        }
+        public NekoCatSpiderBuilder log(){
+            interceptors.add(new LoggingInterceptor());
+            return this;
+        }
+        public NekoCatSpiderBuilder logError(){
+            interceptors.add(new ErrorLoggingInterceptor());
             return this;
         }
 
