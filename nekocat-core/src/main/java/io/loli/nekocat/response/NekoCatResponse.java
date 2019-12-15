@@ -1,5 +1,7 @@
 package io.loli.nekocat.response;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import io.loli.nekocat.NekoCatContext;
 import io.loli.nekocat.exception.DownloadException;
 import lombok.NoArgsConstructor;
@@ -71,6 +73,9 @@ public class NekoCatResponse {
 
     public Document asDocument() {
         return asDocument("UTF-8");
+    }
+    public JSONObject asJson() {
+        return JSON.parseObject(asString("UTF-8"));
     }
 
     public NekoCatContext getContext() {
