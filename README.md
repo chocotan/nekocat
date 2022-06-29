@@ -1,4 +1,6 @@
 # A lightweight crawler framework
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fchocotan%2Fnekocat.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fchocotan%2Fnekocat?ref=badge_shield)
+
 
 
 ## Usage
@@ -208,3 +210,7 @@ NekoCatProperties.builder()
 1. json export
 2. redis queue/db queue
 3. Thread Pool Factory
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fchocotan%2Fnekocat.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fchocotan%2Fnekocat?ref=badge_large)
